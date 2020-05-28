@@ -10,19 +10,18 @@ integral<-function(cova=t(can_c32_AZ_1)[,2]){
   deltat     <- tfine[2]-tfine[1]
   xmat       <- eval.fd(tfine, xfdj)
   fitj       <- deltat*(crossprod(xmat,rep(1,nfine)) -0.5*(outer(xmat[1,],1) +outer(xmat[nfine,],1)))
-  return (abs(fitj))#autual area
+  return (abs(fitj))
 }
 
 designCell<-function(data=AZ_628,cell="C32"){
   x10<-matrix(0,14,5)
   colnames(x10)=as.character(unique(data$Time.Point..hr.))
   sub<-unique(data$Drug.Concentration..uM.)
-  x.0<-list()#n subjects first dose of every covariates
+  x.0<-list()
   X0<-matrix(0,7,14)
   for (j in 1:7){
     for (i in 1:14){
-      x10[i,]<-data[(data$Drug.Concentration..uM. ==sub[j] & data$Cell.Line.Name ==cell),(i+4)]#s=1
-      #  x10[2,]<-data[(data$Cell.Line.Name =='C32' & data$Drug.Concentration..uM.==t),6]
+      x10[i,]<-data[(data$Drug.Concentration..uM. ==sub[j] & data$Cell.Line.Name ==cell),(i+4)]
     }
     x.0[[j]]<-x10[,3:5]
     X0[j,]<-as.vector(integral(t(x.0[[j]])))
@@ -57,7 +56,7 @@ pos_DAlpGamMu0<-function(y,y0,mu0,dalpha,dgamma,XAbeta,XGbeta,sigma,betaASD,beta
   pre.dgamma=c(0,dgamma)
   for(i in 1:7){
     llik<-priLikDAlpha(y = y[,i],y0 = y0[i],dalpha = dalpha[i],dgamma = dgamma[i],pre.dalpha = pre.dalpha[i],xabeta = XAbeta[i],sigma = sigma,betaSD = betaASD)
-    dalpha.s<-rtruncnorm(1,mean = dalpha[i],sd = .1,a=0)#.2
+    dalpha.s<-rtruncnorm(1,mean = dalpha[i],sd = .1,a=0)
     llikp<-priLikDAlpha(y = y[,i],y0 = y0[i],dalpha = dalpha.s,dgamma = dgamma[i],pre.dalpha = pre.dalpha[i],xabeta = XAbeta[i],sigma = sigma,betaSD = betaASD)
     r = exp(llikp - llik
             -log(dtruncnorm(dalpha.s, mean=dalpha[i], sd=.1, a=0))
@@ -70,7 +69,7 @@ pos_DAlpGamMu0<-function(y,y0,mu0,dalpha,dgamma,XAbeta,XGbeta,sigma,betaASD,beta
     }
     
     llikG<-priLikDGamma(y = y[,i],y0 = y0[i],dalpha=dalpha[i],dgamma = dgamma[i],pre.dgamma = pre.dgamma[i],xgbeta = XGbeta[i],sigma = sigma,betaSD = betaGSD)
-    dgamma.s<-rtruncnorm(1,mean = dgamma[i],sd = .1, a=0)#.2
+    dgamma.s<-rtruncnorm(1,mean = dgamma[i],sd = .1, a=0)
     llikpG<-priLikDGamma(y = y[,i],y0 = y0[i],dalpha=dalpha[i],dgamma = dgamma.s,pre.dgamma = pre.dgamma[i],xgbeta = XGbeta[i],sigma = sigma,betaSD = betaGSD)
     r = exp(llikpG - llikG
             -log(dtruncnorm(dgamma.s, mean=dgamma[i], sd=.1, a=0))
@@ -127,8 +126,8 @@ priLikSigma2<-function(y,mu0,Gamma,Alpha,Sigma2){
   for (k in 1:2){
     likHoods[k,,]<-y0*Gamma^(1-Alpha^(-k))
   }
-  likY<-sum(log(dtruncnorm(y[2:3,,], a=0, b=1, mean = likHoods, sd = sqrt(Sigma2))))#sum(msm::dtnorm(x = y,mean = likHoods,sd =sqrt(Sigma2),log=T,lower = 0,upper=1))
-  likY0<-sum(log(dtruncnorm(y0, a=0, b=1, mean = mu0, sd = sqrt(Sigma2))))#sum(msm::dtnorm(x = y,mean = likHoods,sd =sqrt(Sigma2),log=T,lower = 0,upper=1))
+  likY<-sum(log(dtruncnorm(y[2:3,,], a=0, b=1, mean = likHoods, sd = sqrt(Sigma2))))
+  likY0<-sum(log(dtruncnorm(y0, a=0, b=1, mean = mu0, sd = sqrt(Sigma2))))
   priSigma2<-dinvgamma(Sigma2,shape = 2,scale = 1,log = T)
   return(likY+likY0+priSigma2)
 }
@@ -163,7 +162,6 @@ priLikABCTheSig0<-function(mu0,sig0,a,b,c,theta){
 
 
 posABCTheSig0<-function(mu0,sig0,a,b,c,theta){
-  #print(i)
   likeH<-priLikABCTheSig0(mu0 = mu0,sig0 = sig0,a = a,b = b,c = c,theta = theta)
   a.s<-rtruncnorm(1,a,sd=0.05,a = 0,b=1)
   likeHS<-priLikABCTheSig0(mu0 = mu0,sig0 = sig0,a = a.s,b = b,c = c,theta = theta)
@@ -176,7 +174,6 @@ posABCTheSig0<-function(mu0,sig0,a,b,c,theta){
     a=a.s
   }
   
-  #print(i)
   likeH<-priLikABCTheSig0(mu0 = mu0,sig0 = sig0,a = a,b = b,c = c,theta = theta)
   b.s<-rtruncnorm(1,mean = b,sd=0.05,a = a,b=1)
   likeHS<-priLikABCTheSig0(mu0 = mu0,sig0 = sig0,a = a,b = b.s,c = c,theta = theta)
@@ -189,7 +186,6 @@ posABCTheSig0<-function(mu0,sig0,a,b,c,theta){
     b=b.s
   }
   
-  #print(i)
   likeH<-priLikABCTheSig0(mu0 = mu0,sig0 = sig0,a = a,b = b,c = c,theta = theta)
   c.s<-rtruncnorm(1,mean=c,sd=0.5,a = 0,b = 3.16)
   likeHS<-priLikABCTheSig0(mu0 = mu0,sig0 = sig0,a = a,b = b,c = c.s,theta = theta)
