@@ -134,7 +134,7 @@ priLikSigma2<-function(y,mu0,Gamma,Alpha,Sigma2){
 
 posSigma2<-function(y,mu0,Gamma,Alpha,Sigma2){
   llik<-priLikSigma2(y = y,mu0 = mu0,Gamma = Gamma,Alpha = Alpha,Sigma2 = Sigma2)
-  Sigma2.s<-abs(rnorm(1,Sigma2,sd=0.05))
+  Sigma2.s<-abs(rnorm(1,Sigma2,sd=0.005))
   llikp<-priLikSigma2(y = y,mu0 = mu0,Gamma = Gamma,Alpha = Alpha,Sigma2 = Sigma2.s)
   r = exp(llikp - llik)
   accept<-min(1,r)
