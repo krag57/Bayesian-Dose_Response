@@ -1,4 +1,3 @@
-
 integral<-function(cova=t(can_c32_AZ_1)[,2]){
   tempbasis<-create.bspline.basis(c(1,5),nbasis = 3,norder = 3)
   tempsmooth1<-smooth.basis(seq(1,5,le=3),cova,tempbasis)
@@ -10,10 +9,6 @@ integral<-function(cova=t(can_c32_AZ_1)[,2]){
   tfine      <- seq(xrng[1], xrng[2], len=nfine)
   deltat     <- tfine[2]-tfine[1]
   xmat       <- eval.fd(tfine, xfdj)
-  #n <- 101
-  #x <- tfine
-  #y <- xmat
-  #trapz(x, y) 
   fitj       <- deltat*(crossprod(xmat,rep(1,nfine)) -0.5*(outer(xmat[1,],1) +outer(xmat[nfine,],1)))
   return (abs(fitj))#autual area
 }
@@ -57,56 +52,36 @@ priLikDMu0<-function(y0,mu0,sigma,pMu0,pSigma0){
   return (likMu0+priMu0)
 }
 
-# y=Y[2:3,i,]
-# y0=Y[1,i,]
-# mu0=resMu0[p-1,,i]
-# dalpha=resDAlpha[p-1,,i]
-# dgamma=resDGamma[p-1,,i]
-# XAbeta=XAbeta[i,]
-# XGbeta=XGbeta[i,]
-# sigma=sqrt(sig2)
-# betaASD=s2a
-# betaGSD=s2g
-# pMu0
-# pSigma0=sqrt(sig0)
-
 pos_DAlpGamMu0<-function(y,y0,mu0,dalpha,dgamma,XAbeta,XGbeta,sigma,betaASD,betaGSD,pMu0,pSigma0){
   pre.dalpha=c(0,dalpha)
   pre.dgamma=c(0,dgamma)
   for(i in 1:7){
-    #print(i)
     llik<-priLikDAlpha(y = y[,i],y0 = y0[i],dalpha = dalpha[i],dgamma = dgamma[i],pre.dalpha = pre.dalpha[i],xabeta = XAbeta[i],sigma = sigma,betaSD = betaASD)
     dalpha.s<-rtruncnorm(1,mean = dalpha[i],sd = .1,a=0)#.2
     llikp<-priLikDAlpha(y = y[,i],y0 = y0[i],dalpha = dalpha.s,dgamma = dgamma[i],pre.dalpha = pre.dalpha[i],xabeta = XAbeta[i],sigma = sigma,betaSD = betaASD)
     r = exp(llikp - llik
             -log(dtruncnorm(dalpha.s, mean=dalpha[i], sd=.1, a=0))
             +log(dtruncnorm(dalpha[i], mean=dalpha.s, sd=.1, a=0)))
-    r=ifelse(r == 'NaN',0,r)
-    accept<-min(1,r+.01)
+    accept<-min(1,r)
     z<-runif(1)
-    #print (dalpha.s)
     if(z<accept){
       dalpha[i] = dalpha.s
       pre.dalpha[i+1]=dalpha.s
     }
     
-    #print(i)
     llikG<-priLikDGamma(y = y[,i],y0 = y0[i],dalpha=dalpha[i],dgamma = dgamma[i],pre.dgamma = pre.dgamma[i],xgbeta = XGbeta[i],sigma = sigma,betaSD = betaGSD)
     dgamma.s<-rtruncnorm(1,mean = dgamma[i],sd = .1, a=0)#.2
     llikpG<-priLikDGamma(y = y[,i],y0 = y0[i],dalpha=dalpha[i],dgamma = dgamma.s,pre.dgamma = pre.dgamma[i],xgbeta = XGbeta[i],sigma = sigma,betaSD = betaGSD)
     r = exp(llikpG - llikG
             -log(dtruncnorm(dgamma.s, mean=dgamma[i], sd=.1, a=0))
             +log(dtruncnorm(dgamma[i], mean=dgamma.s, sd=.1, a=0)))
-    r=ifelse(r == 'NaN',0,r)
-    accept<-min(1,r+.01)
+    accept<-min(1,r)
     z<-runif(1)
-    #print (dalpha.s)
     if(z<accept){
       dgamma[i] = dgamma.s
       pre.dgamma[i+1]=dgamma.s
     }
     
-    #print(i)
     llikM<-priLikDMu0(y0 = y0[i],mu0 = mu0[i],sigma = sigma,pMu0 = pMu0[i],pSigma0 = pSigma0)
     Mu0.s<-rtruncnorm(1,mean =mu0[i],sd = 0.05, a=0,b=1)
     llikpM<-priLikDMu0(y0 = y0[i],mu0 = Mu0.s,sigma = sigma,pMu0 = pMu0[i],pSigma0 = pSigma0)
@@ -251,19 +226,6 @@ posABCTheSig0<-function(mu0,sig0,a,b,c,theta){
   
   return (c(a,b,c,theta,sig0))
 }
-
-
-
-
-
-########################################################################################################
-########################################################################################################
-########################################################################################################
-########################################################################################################
-########################################################################################################
-
-
-
 
 
 

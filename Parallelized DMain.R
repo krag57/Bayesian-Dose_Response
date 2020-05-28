@@ -239,6 +239,7 @@ for (p in 2:M){
   S2A<-c(S2A,s2a)
   S2G<-c(S2G,s2g)
 }
+stopImplicitCluster()
 
 apply(resAlpha,c(2,3),function (x) quantile(x,0.025))
 apply(resAlpha,c(2,3),mean)
