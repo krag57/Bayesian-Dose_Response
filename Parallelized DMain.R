@@ -229,11 +229,11 @@ for (p in 2:M){
   AAbind<-cbind(AAbind,matrix(log(resDAlpha[p,,]), ncol = 1))
   GGbind<-cbind(GGbind,matrix(log(resDGamma[p,,]), ncol = 1))
   
-  capture.output(baa<-bridge(Xbind,matrix(log(resDAlpha[p,,]), ncol = 1),RJ=F,ab=c(1, 6)), file='NUL')
+  capture.output(baa<-bridge(Xbind,matrix(log(resDAlpha[p,,]), ncol = 1),RJ=F,ab=c(1, 10)), file='NUL')
   beta<-colMeans(baa$beta[-(1:500),])
   s2a=(sqrt(mean(baa$s2)))
   
-  capture.output(bag<-bridge(Xbind,matrix(log(resDGamma[p,,]), ncol = 1),RJ=F,ab=c(1, 6)), file='NUL')
+  capture.output(bag<-bridge(Xbind,matrix(log(resDGamma[p,,]), ncol = 1),RJ=F,ab=c(1,10)), file='NUL')
   beta_g<-colMeans(bag$beta[-(1:500),])
   s2g=(sqrt(mean(bag$s2)))
   S2A<-c(S2A,s2a)
@@ -245,6 +245,12 @@ apply(resAlpha,c(2,3),function (x) quantile(x,0.025))
 apply(resAlpha,c(2,3),mean)
 AT[,1:10]
 apply(resAlpha,c(2,3),function (x) quantile(x,0.975))
+
+apply(resGamma,c(2,3),function (x) quantile(x,0.025))
+apply(resGamma,c(2,3),mean)
+GT[,1:10]
+apply(resGamma,c(2,3),function (x) quantile(x,0.975))
+
 # apply(resDAlpha,c(2,3),mean)
 # AT
 # alphaGamma(resAlpha[(M/2):M,,],1,1)
