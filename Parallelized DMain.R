@@ -1,4 +1,4 @@
-#setwd("~/Downloads")
+setwd("~/Documents/GitHub/Bayesian-Dose_Response")
 
 library(fda)
 library(msm)
@@ -31,7 +31,7 @@ library(doParallel)
 can <- read.csv("HMS_LINCS_RPPA_Data_Normalized_(Innoscan_Mapix)_SRD_Sep_21.csv")
 AZ_628=can[can$Small.Molecule.Name=='AZ-628',c(1:4,5:6,8,10,12,14:15,17,19,21:25)]
 
-#source("/home/statgrads/krag57/Parallelized simulation.R")
+source("Parallelized simulation.R")
 # can <- read.csv("/home/statgrads/krag57/HMS_LINCS_RPPA_Data_Normalized_(Innoscan_Mapix)_SRD_Sep_21.csv")
 # AZ_628=can[can$Small.Molecule.Name=='AZ-628',c(1:4,5:6,8,10,12,14:15,17,19,21:25)]
 
@@ -178,6 +178,7 @@ numCores
 i=2
 #p=2
 #p=p+1
+registerDoParallel(numCores)
 for (p in 2:M){
   print(p)
   #source("/home/statgrads/krag57/Parallelized simulation5.R")
@@ -189,7 +190,7 @@ for (p in 2:M){
   
   pMu0<-muMu0(a,b,c,theta,d)
   
-  registerDoParallel(numCores)
+  
   Results=foreach(i=1:10) %dopar% {
     pos_DAlpGamMu0(y=y[2:3,i,],y0=y[1,i,],mu0=resMu0[p-1,,i],dalpha=resDAlpha[p-1,,i],dgamma=resDGamma[p-1,,i],
                    XAbeta=XAbeta[,i],XGbeta=XGbeta[,i],sigma=sqrt(sig2),betaASD=s2a,betaGSD=s2g,pMu0,pSigma0=sqrt(sig0))
@@ -228,19 +229,21 @@ for (p in 2:M){
   AAbind<-cbind(AAbind,matrix(log(resDAlpha[p,,]), ncol = 1))
   GGbind<-cbind(GGbind,matrix(log(resDGamma[p,,]), ncol = 1))
   
-  capture.output(baa<-bridge(Xbind,matrix(log(resDAlpha[p,,]), ncol = 1),RJ=F,ab=c(2, .1)), file='NUL')
+  capture.output(baa<-bridge(Xbind,matrix(log(resDAlpha[p,,]), ncol = 1),RJ=F,ab=c(1, 3)), file='NUL')
   beta<-colMeans(baa$beta[-(1:500),])
   s2a=(sqrt(mean(baa$s2)))
   
-  capture.output(bag<-bridge(Xbind,matrix(log(resDGamma[p,,]), ncol = 1),RJ=F,ab=c(2, .1)), file='NUL')
+  capture.output(bag<-bridge(Xbind,matrix(log(resDGamma[p,,]), ncol = 1),RJ=F,ab=c(1, 3)), file='NUL')
   beta_g<-colMeans(bag$beta[-(1:500),])
   s2g=(sqrt(mean(bag$s2)))
   S2A<-c(S2A,s2a)
   S2G<-c(S2G,s2g)
 }
 
-# apply(resAlpha,c(2,3),function (x) quantile(x,0.025))
+apply(resAlpha,c(2,3),function (x) quantile(x,0.025))
 apply(resAlpha,c(2,3),mean)
+AT[,1:10]
+apply(resAlpha,c(2,3),function (x) quantile(x,0.975))
 # apply(resDAlpha,c(2,3),mean)
 # AT
 # alphaGamma(resAlpha[(M/2):M,,],1,1)
@@ -249,14 +252,36 @@ apply(resAlpha,c(2,3),mean)
 # betagp<-rowMeans(BetaG[,-(1:M/2)])
 # Sig<-(mean(sqrt(sig2s[-(1:M/2)])))
 # 
-# par(mfrow=c(1,1))
-# traceplot(as.mcmc(sig0s[-(1:M/2)]),main="Sigma0")
-# #traceplot(as.mcmc(sig1s[-(1:1500)]),main="Sigma1")
-# traceplot(as.mcmc(sig2s[-(1:M/2)]),main="Sigma2")
-# traceplot(as.mcmc(As[-(1:M/2)]),main="A")
-# traceplot(as.mcmc(Bs[-(1:M/2)]),main="B")
-# traceplot(as.mcmc(Cs[-(1:M/2)]),main="C")
-# traceplot(as.mcmc(thetas[-(1:M/2)]),main="Theta")
+par(mfrow=c(1,1))
+traceplot(as.mcmc(sig0s[-(1:M/2)]),main="Sigma0")
+#traceplot(as.mcmc(sig1s[-(1:1500)]),main="Sigma1")
+traceplot(as.mcmc(sig2s[-(1:M/2)]),main="Sigma2")
+traceplot(as.mcmc(As[-(1:M/2)]),main="A")
+traceplot(as.mcmc(Bs[-(1:M/2)]),main="B")
+traceplot(as.mcmc(Cs[-(1:M/2)]),main="C")
+traceplot(as.mcmc(thetas[-(1:M/2)]),main="Theta")
+traceplot(as.mcmc(S2A[-(1:M/2)]),main="var1")
+traceplot(as.mcmc(S2G[-(1:M/2)]),main="var2")
 
+#### Postrior Mean of beta(alpha)
+rowMeans(BetaA[,-(1:M/2)])
 
+#### HPD interval
+hpd<-HPDinterval(as.mcmc(t(BetaA[,-(1:M/2)])))
+par(mfrow=c(1,1))
+plot(c(1:14),rowMeans(BetaA[,-(1:M/2)]),typ = 'l',ylim=c(-5,5),main = "Beta Alpha CI",ylab="Posterior Mean",xlab="Variables")
+points(c(1:14),apply(BetaA[,-(1:M/2)],1,function (x) quantile(x,0.025)))
+points(c(1:14),apply(BetaA[,-(1:M/2)],1,function (x) quantile(x,0.975)))
+points(c(1:14),(betaa),pch=8)
+
+### Postrior Mean of beta(gamma)
+rowMeans(BetaG[,-(1:M/2)])
+
+#### HPD interval
+hpd1<-HPDinterval(as.mcmc(t(BetaG[,-(1:M/2)])))
+par(mfrow=c(1,1))
+plot(c(1:14),rowMeans(BetaG[,-(1:M/2)]),typ = 'l',ylim=c(-5,5),main = "Beta Gamma CI",ylab="Posterior Mean",xlab="Variables")
+points(c(1:14),apply(BetaG[,-(1:M/2)],1,function (x) quantile(x,0.025)))
+points(c(1:14),apply(BetaG[,-(1:M/2)],1,function (x) quantile(x,0.975)))
+points(c(1:14),betag,pch=8)
 

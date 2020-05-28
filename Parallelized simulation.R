@@ -76,27 +76,27 @@ pos_DAlpGamMu0<-function(y,y0,mu0,dalpha,dgamma,XAbeta,XGbeta,sigma,betaASD,beta
   for(i in 1:7){
     #print(i)
     llik<-priLikDAlpha(y = y[,i],y0 = y0[i],dalpha = dalpha[i],dgamma = dgamma[i],pre.dalpha = pre.dalpha[i],xabeta = XAbeta[i],sigma = sigma,betaSD = betaASD)
-    dalpha.s<-rtruncnorm(1,mean = dalpha[i],sd = .5,a=0)#.2
+    dalpha.s<-rtruncnorm(1,mean = dalpha[i],sd = .1,a=0)#.2
     llikp<-priLikDAlpha(y = y[,i],y0 = y0[i],dalpha = dalpha.s,dgamma = dgamma[i],pre.dalpha = pre.dalpha[i],xabeta = XAbeta[i],sigma = sigma,betaSD = betaASD)
     r = exp(llikp - llik
-            -log(dtruncnorm(dalpha.s, mean=dalpha[i], sd=.5, a=0))
-            +log(dtruncnorm(dalpha[i], mean=dalpha.s, sd=.5, a=0)))
+            -log(dtruncnorm(dalpha.s, mean=dalpha[i], sd=.1, a=0))
+            +log(dtruncnorm(dalpha[i], mean=dalpha.s, sd=.1, a=0)))
     r=ifelse(r == 'NaN',0,r)
     accept<-min(1,r+.01)
     z<-runif(1)
     #print (dalpha.s)
     if(z<accept){
       dalpha[i] = dalpha.s
-      pre.dalpha[i+1]=dalpha[i]
+      pre.dalpha[i+1]=dalpha.s
     }
     
     #print(i)
     llikG<-priLikDGamma(y = y[,i],y0 = y0[i],dalpha=dalpha[i],dgamma = dgamma[i],pre.dgamma = pre.dgamma[i],xgbeta = XGbeta[i],sigma = sigma,betaSD = betaGSD)
-    dgamma.s<-rtruncnorm(1,mean = dgamma[i],sd = .5, a=0)#.2
+    dgamma.s<-rtruncnorm(1,mean = dgamma[i],sd = .1, a=0)#.2
     llikpG<-priLikDGamma(y = y[,i],y0 = y0[i],dalpha=dalpha[i],dgamma = dgamma.s,pre.dgamma = pre.dgamma[i],xgbeta = XGbeta[i],sigma = sigma,betaSD = betaGSD)
     r = exp(llikpG - llikG
-            -log(dtruncnorm(dgamma.s, mean=dgamma[i], sd=.5, a=0))
-            +log(dtruncnorm(dgamma[i], mean=dgamma.s, sd=.5, a=0)))
+            -log(dtruncnorm(dgamma.s, mean=dgamma[i], sd=.1, a=0))
+            +log(dtruncnorm(dgamma[i], mean=dgamma.s, sd=.1, a=0)))
     r=ifelse(r == 'NaN',0,r)
     accept<-min(1,r+.01)
     z<-runif(1)
@@ -160,7 +160,7 @@ priLikSigma2<-function(y,mu0,Gamma,Alpha,Sigma2){
 
 posSigma2<-function(y,mu0,Gamma,Alpha,Sigma2){
   llik<-priLikSigma2(y = y,mu0 = mu0,Gamma = Gamma,Alpha = Alpha,Sigma2 = Sigma2)
-  Sigma2.s<-abs(rnorm(1,Sigma2,sd=0.005))
+  Sigma2.s<-abs(rnorm(1,Sigma2,sd=0.05))
   llikp<-priLikSigma2(y = y,mu0 = mu0,Gamma = Gamma,Alpha = Alpha,Sigma2 = Sigma2.s)
   r = exp(llikp - llik)
   accept<-min(1,r)
