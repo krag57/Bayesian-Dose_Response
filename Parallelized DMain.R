@@ -168,8 +168,8 @@ Bs<-c()
 Cs<-c()
 thetas<-c()
 
-s2g=0.5
-s2a=0.5
+s2g=1
+s2a=1
 S2A<-c(s2a)
 S2G<-c(s2g)
 numCores <- detectCores()
@@ -229,11 +229,11 @@ for (p in 2:M){
   AAbind<-cbind(AAbind,matrix(log(resDAlpha[p,,]), ncol = 1))
   GGbind<-cbind(GGbind,matrix(log(resDGamma[p,,]), ncol = 1))
   
-  capture.output(baa<-bridge(Xbind,matrix(log(resDAlpha[p,,]), ncol = 1),RJ=F,ab=c(1, .05)), file='NUL')
+  capture.output(baa<-bridge(Xbind,matrix(log(resDAlpha[p,,]), ncol = 1),RJ=F,ab=c(1,2)), file='NUL')
   beta<-colMeans(baa$beta[-(1:500),])
   s2a=(sqrt(mean(baa$s2)))
   
-  capture.output(bag<-bridge(Xbind,matrix(log(resDGamma[p,,]), ncol = 1),RJ=F,ab=c(1,.05)), file='NUL')
+  capture.output(bag<-bridge(Xbind,matrix(log(resDGamma[p,,]), ncol = 1),RJ=F,ab=c(1,2)), file='NUL')
   beta_g<-colMeans(bag$beta[-(1:500),])
   s2g=(sqrt(mean(bag$s2)))
   S2A<-c(S2A,s2a)
