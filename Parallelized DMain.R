@@ -99,12 +99,23 @@ matplot(1:7,t(mu015),lty = 1,col=1:15,type = "l",lwd = 1.5,xlab="d")
 mu0=mu015[1:10,]
 
 Z=Y<-array(0,c(3,15,7))
+# y0t<-c()
+# for (i in 1:15){
+#   y0i<-(msm::rtnorm(7,mu015[i,],0.005,lower = 0,u=1))
+#   y0t=rbind(y0t,y0i)
+# }
 y0<-matrix(msm::rtnorm(105,mu015,0.005,lower = 0,u=1),nrow = 15,byrow = F)
 Z[1,,]<-y0
 for (k in 1:2){
-  yi<-matrix(msm::rtnorm(105,y0*t(GT)^(1-t(AT)^(-k)),0.005,lower = 0,u=1),nrow = 15,byrow = F)
-  Z[k+1,,]<-yi
+  yt<-c()
+  for (i in 1:15){
+    yi<-(msm::rtnorm(7,y0[i,]*t(GT[,i])^(1-t(AT[,i])^(-k)),0.005,lower = 0,u=1))
+    yt=rbind(yt,yi)
+  }
+  Z[k+1,,]<-yt
 }
+Z[2,,]  
+
 Y=Z[,1:10,]
 
 ########################################################################################################
@@ -291,3 +302,121 @@ points(c(1:14),apply(BetaG[,-(1:M/2)],1,function (x) quantile(x,0.025)))
 points(c(1:14),apply(BetaG[,-(1:M/2)],1,function (x) quantile(x,0.975)))
 points(c(1:14),betag,pch=8)
 
+
+###########################################################################################
+################################### Prediction ############################################
+###########################################################################################
+
+al=apply(resAlpha,c(2,3),function (x) quantile(x,0.025))
+am=apply(resAlpha,c(2,3),mean)
+at=AT[,1:10]
+au=apply(resAlpha,c(2,3),function (x) quantile(x,0.975))
+
+
+gplotpred3(t(am),t(al),t(au),t(at),variable="Subject")
+
+
+gl=apply(resGamma,c(2,3),function (x) quantile(x,0.025))
+gm=apply(resGamma,c(2,3),mean)
+gt=GT[,1:10]
+gu=apply(resGamma,c(2,3),function (x) quantile(x,0.975))
+gplotpred3(t(gm),t(gl),t(gu),t(gt),variable="Gamma")
+
+AlphaHat<-array(0,c(7,5,dim(BetaA[,-(1:M/2)])[2]))
+for (r in 1:dim(BetaA[,-(1:M/2)])[2]){
+  DA=matrix(0,nrow = 7,5)
+  for(i in 1:5){
+    DA[,i]=exp(dta15[[10+i]]%*%BetaA[,(M/2)+r])
+  }
+  
+  AThat=matrix(0,nrow = 7,5)
+  AThat[1,]<-DA[1,]+1
+  for (i in 2:7){
+    AThat[i,]<-AThat[i-1,]+DA[i,]
+  }
+  AlphaHat[,,r]<-AThat
+}
+
+GammaHat<-array(0,c(7,5,dim(BetaG[,-(1:M/2)])[2]))
+for (r in 1:dim(BetaG[,-(1:M/2)])[2]){
+  DG=matrix(0,nrow = 7,5)
+  for(i in 1:5){
+    DG[,i]=exp(dta15[[10+i]]%*%BetaG[,(M/2)+r])
+  }
+  
+  GThat=matrix(0,nrow = 7,5)
+  GThat[1,]<-DG[1,]+1
+  for (j in 2:7){
+    GThat[j,]<-GThat[j-1,]+DG[j,]
+  }
+  GammaHat[,,r]<-GThat
+}
+
+
+an=apply(AlphaHat, c(1,2), mean)
+anl=apply(AlphaHat, c(1,2), function(x) quantile(x,0.025))
+anu=apply(AlphaHat, c(1,2), function(x) quantile(x,0.975))
+AT[,11:15]
+gplotpred3(t(an),t(anl),t(anu),t(AT[,11:15]),variable="Alpha")
+
+
+gn=apply(GammaHat, c(1,2), mean)
+gnl=apply(GammaHat, c(1,2), function(x) quantile(x,0.025))
+gnu=apply(GammaHat, c(1,2), function(x) quantile(x,0.975))
+GT[,11:15]
+gplotpred3(t(gn),t(gnl),t(gnu),t(GT[,11:15]),variable="Gamma")
+
+
+ac=cbind(am,an)
+acl=cbind(al,anl)
+acu=cbind(au,anu)
+AT
+gplotpred3(t(ac),t(acl),t(acu),t(AT),variable="Alpha")
+
+gc=cbind(gm,gn)
+gcl=cbind(gl,gnl)
+gcu=cbind(gu,gnu)
+GT
+gplotpred3(t(gc),t(gcl),t(gcu),t(GT),variable="Gamma")
+
+
+y0p<-Z[1,11:15,]
+r48<-Z[2,11:15,]
+r72<-Z[3,11:15,]
+
+
+
+y0pp<-matrix(as.vector(y0p),nrow = 7,ncol = 5,byrow = T)
+pre48<-array(0,c(5,7,dim(GammaHat)[3]))
+for (r in 1:dim(GammaHat)[3]){
+  Sig<-sqrt(sig2s[(M/2)+r])
+  # yt<-c()
+  # for (i in 1:5){
+  #   yi<-(msm::rtnorm(7,y0pp[,i]*t(GammaHat[,i,r])^(1-t(AlphaHat[,i,r])^(-1)),Sig,lower = 0,u=1))
+  #   yt=rbind(yt,yi)
+  # }
+  # Z[k+1,,]<-yt
+  p481dist<-rtmvnorm(1,mu =as.vector(y0pp*GammaHat[,,r]^(1-AlphaHat[,,r]^(-1))),sigma = diag(Sig,35), lb = rep(0,35),ub = rep(1,35))
+  p481<-matrix(p481dist,5,7,byrow = T)
+  pre48[,,r]<-p481
+}
+
+p48=apply(pre48, c(1,2), mean)
+p48l=apply(pre48, c(1,2), function(x) quantile(x,0.025))
+p48u=apply(pre48, c(1,2), function(x) quantile(x,0.975))
+r48
+gplotpred3(p48,p48l,p48u,r48,variable="Y @ t=48hr")
+
+pre72<-array(0,c(5,7,dim(GammaHat)[3]))
+for (r in 1:dim(GammaHat)[3]){
+  Sig<-sqrt(sig2s[(M/2)+r])
+  p721dist<-rtmvnorm(1,mu =as.vector(y0pp*GammaHat[,,r]^(1-AlphaHat[,,r]^(-2))),sigma = diag(Sig,35), lb = rep(0,35),ub = rep(1,35))
+  p721<-matrix(p721dist,5,7,byrow = T)
+  pre72[,,r]<-p721
+}
+
+p72=apply(pre72, c(1,2), mean)
+p72l=apply(pre72, c(1,2), function(x) quantile(x,0.025))
+p72u=apply(pre72, c(1,2), function(x) quantile(x,0.975))
+r72
+gplotpred3(p72,p72l,p72u,r72,variable="Y @ t=72hr")

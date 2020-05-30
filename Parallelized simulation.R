@@ -223,6 +223,191 @@ posABCTheSig0<-function(mu0,sig0,a,b,c,theta){
   return (c(a,b,c,theta,sig0))
 }
 
+##########################################################################
+############################# PLots ######################################
+##########################################################################
+gplotrow<-function(data,tru,name="Alpha 1"){
+  nrow=dim(data)[1]
+  x=1:nrow
+  low=apply(data,1,function (x) quantile(x,0.025))
+  upp=apply(data,1,function (x) quantile(x,0.975))
+  pre=rowMeans(data)
+  
+  pl=data.frame(x=x,y=pre,z=tru,
+                l=low,
+                u=upp)
+  
+  ggplot(pl) + 
+    geom_line(aes(x,y,colour="blue")) +
+    geom_point(aes(x,z,colour="darkred")) +
+    theme_gray() +
+    labs(title = paste0("Prediction including 95%CI ",name),x="Dose",y="Values") +
+    geom_ribbon(aes(x,ymin=l, ymax=u,color="lightblue"),fill="lightblue", alpha=0.3)+
+    scale_x_continuous(breaks=x)+
+    scale_color_manual(name=NULL,values = c("blue", "red","lightblue"),labels=c("Predicted", "True","95% CI"))+
+    theme(plot.title = element_text(hjust=0.5),legend.position = c(0.95, 0.95),legend.justification = c("right", "top"),legend.background = element_rect(fill=NA))
+  
+  #ggsave(paste0(name,".png"))
+}
 
+gplotrow1<-function(data,tru,name="Alpha 1"){
+  nrow=dim(data)[1]
+  x=1:nrow
+  low=apply(data,1,function (x) quantile(x,0.025))
+  upp=apply(data,1,function (x) quantile(x,0.975))
+  pre=rowMeans(data)
+  
+  pl=data.frame(x=x,y=pre,z=tru,
+                l=low,
+                u=upp)
+  
+  ggplot(pl) + 
+    geom_line(aes(x,y,colour="blue")) +
+    geom_point(aes(x,z,colour="darkred")) +
+    theme_gray() +
+    labs(title = paste0("Prediction including 95%CI ",name),x="Predictors",y="Values") +
+    geom_ribbon(aes(x,ymin=l, ymax=u,color="lightblue"),fill="lightblue", alpha=0.3)+
+    scale_x_continuous(breaks=x)+
+    scale_y_continuous(limits=c(-6,6))+
+    scale_color_manual(name=NULL,values = c("blue", "red","lightblue"),labels=c("Predicted", "True","95% CI"))+
+    theme(plot.title = element_text(hjust=0.5),legend.position = c(0.95, 0.95),legend.justification = c("right", "top"),legend.background = element_rect(fill=NA))
+  
+  #ggsave(paste0(name,".png"))
+}
+
+gplotpred1<-function(pre,low,upp,tru,name="Alpha 1",posi="none"){
+  nrow=length(pre)
+  x=1:nrow
+  pl=data.frame(x=x,y=pre,z=tru,l=low,u=upp)
+  ggplot(pl) + 
+    geom_line(aes(x,y,colour="blue")) +
+    geom_point(aes(x,z,colour="darkred")) +
+    theme_gray() +
+    labs(title = name,x="Dose",y="Values") +
+    geom_ribbon(aes(x,ymin=l, ymax=u,color="lightblue"),fill="lightblue", alpha=0.3)+
+    scale_x_continuous(breaks=x)+
+    scale_color_manual(name=NULL,values = c("blue", "red","lightblue"),labels=c("Predicted", "True","95% CI"))+
+    theme(legend.position = posi,legend.justification = c("right", "top"),legend.background = element_rect(fill=NA),
+          plot.title = element_text(hjust=0.5,size=10),axis.title.x = element_text(size=8),
+          axis.title.y = element_text(size=8),axis.text.x = element_text(size=7),
+          axis.text.y = element_text(size=7),legend.text=element_text(size=8),legend.key.size = unit(.75, "cm"),
+          legend.key.width = unit(0.75,"cm") )
+  
+  #ggsave(paste0(name,".png"))
+}
+
+gplotpred<-function(df,dfl,dfu,dft,variable="AZ-638 at t=48"){
+  n=dim(df)[1]
+  plots <- vector("list", n)
+  for (i in 1:n){
+    plots[[i]] <- gplotpred1(df[i,],dfl[i,],dfu[i,],dft[i,],name=paste0("Subject ",i))
+    p2=get_legend(gplotpred1(df[i,],dfl[i,],dfu[i,],dft[i,],name=paste0("Subject ",i),posi=c(0.75, 0.75)))
+  }
+  plots[[i+1]]=p2
+  
+  figure=do.call(ggarrange, plots)#c(plots,common.legend = TRUE, legend="right"))
+  # theme(plot.subtitle = element_text(hjust=0.5,size=8),axis.title.x = element_text(size=8),
+  #       axis.title.y = element_text(size=8),axis.text.x = element_text(size=5),
+  #       axis.text.y = element_text(size=5))
+  annotate_figure(figure,top = text_grob(paste0("Prediction of  ",variable),face = "bold",size = 16))
+  #ggsave(paste0("Trace plot of ",variable,".png"))
+}
+
+gplotpred2<-function(pre,low,upp,tru,name="Alpha 1",posi="none"){
+  nrow=length(pre)
+  x=1:nrow
+  pl=data.frame(x=x,y=pre,z=tru,l=low,u=upp)
+  ggplot(pl) + 
+    geom_line(aes(x,y,colour="blue")) +
+    geom_point(aes(x,z,colour="darkred")) +
+    theme_gray() +
+    labs(title = name,x="Doses",y="Values") +
+    geom_ribbon(aes(x,ymin=l, ymax=u,color="lightblue"),fill="lightblue", alpha=0.3)+
+    scale_x_continuous(breaks=x)+
+    scale_color_manual(name=NULL,values = c("blue", "red","lightblue"),labels=c("Predicted", "True","95% CI"))+
+    theme(legend.position = posi,legend.justification = c("right", "top"),legend.background = element_rect(fill=NA),
+          plot.title = element_text(hjust=0.5,size=10),axis.title.x = element_text(size=8),
+          axis.title.y = element_text(size=8),axis.text.x = element_text(size=7),
+          axis.text.y = element_text(size=7),legend.text=element_text(size=8),legend.key.size = unit(.75, "cm"),
+          legend.key.width = unit(0.75,"cm") )
+  
+  #ggsave(paste0(name,".png"))
+}
+
+gplotpred3<-function(df,dfl,dfu,dft,variable="Alpha"){
+  n=dim(df)[1]
+  plots <- vector("list", n)
+  for (i in 1:n){
+    plots[[i]] <- gplotpred2(df[i,],dfl[i,],dfu[i,],dft[i,],name=paste0("Subject ",i))
+    p2=get_legend(gplotpred2(df[i,],dfl[i,],dfu[i,],dft[i,],name=paste0("Subject ",i),posi=c(0.75, 0.75)))
+  }
+  plots[[i+1]]=p2
+  
+  figure=do.call(ggarrange, plots)#c(plots,common.legend = TRUE, legend="right"))
+  # theme(plot.subtitle = element_text(hjust=0.5,size=8),axis.title.x = element_text(size=8),
+  #       axis.title.y = element_text(size=8),axis.text.x = element_text(size=5),
+  #       axis.text.y = element_text(size=5))
+  annotate_figure(figure,top = text_grob(paste0("Prediction including 95%CI ",variable,"s"),face = "bold",size = 16))
+  #ggsave(paste0("Trace plot of ",variable,".png"))
+}
+
+gplotcol<-function(data,tru,name="Alpha 1"){
+  
+  ncol=dim(data)[2]
+  x=1:ncol
+  low=apply(data,2,function (x) quantile(x,0.025))
+  upp=apply(data,2,function (x) quantile(x,0.975))
+  pre=colMeans(data)
+  
+  pl=data.frame(x=x,y=pre,z=tru,
+                l=low,
+                u=upp)
+  
+  ggplot(pl) + 
+    geom_line(aes(x,y,colour="blue")) +
+    geom_point(aes(x,z,colour="darkred")) +
+    theme_gray() +
+    labs(title = paste0("Prediction including 95%CI ",name),x="Dose",y="Values") +
+    geom_ribbon(aes(x,ymin=l, ymax=u,color="lightblue"),fill="lightblue", alpha=0.3)+
+    scale_x_continuous(breaks=x,limit=c(1,15))+
+    scale_color_manual(name=NULL,values = c("blue", "red","lightblue"),labels=c("Predicted", "True","95% CI"))+
+    theme(plot.title = element_text(hjust=0.5),legend.position = c(0.95, 0.95),legend.justification = c("right", "top"),legend.background = element_rect(fill=NA))
+  
+  #ggsave(paste0(name,".png"))
+}
+
+# gplot(1:15,rowMeans(temp_a1[,-(1:M/2)]),apply(temp_a1[,-(1:M/2)],1,function (x) quantile(x,0.025)),
+#       apply(temp_a1[,-(1:M/2)],1,function (x) quantile(x,0.975)),AT[,1])
+# 
+# df=temp_a1[,-(1:M/2)]
+tracegg<-function(df,variable="Alpha1"){
+  n=dim(df)[1]
+  m=dim(df)[2]
+  plots <- vector("list", n)
+  for (i in seq_along(plots))
+    plots[[i]] <- ggplot(data.frame(df[i,]),aes(x=1:m,y=df[i,])) +
+    geom_line()+
+    labs(subtitle = paste0("Subject ",i,sep=""),x="Iteration",y="Values")+
+    scale_x_continuous(breaks=c(1,m/2,m))+
+    #scale_y_continuous(breaks=as.character(round(min(df[i,])-1,2)),as.character(round(max(df[i,])+1,2)),as.character(round(mean(df[i,]),2)))+
+    theme(plot.subtitle = element_text(hjust=0.5,size=8),axis.title.x = element_text(size=8),
+          axis.title.y = element_text(size=8),axis.text.x = element_text(size=5),
+          axis.text.y = element_text(size=5))
+  figure=do.call(ggarrange, plots)
+  annotate_figure(figure,top = text_grob(paste0("Trace plot of ",variable),face = "bold"))
+  #ggsave(paste0("Trace plot of ",variable,".png"))
+}
+#tracegg(df)
+tracesingle<-function(df,variable="Sigma0"){
+  m=length(df)
+  ggplot(data.frame(df),aes(x=1:m,y=df)) +
+    geom_line()+
+    labs(title = paste0("Trace plot of ",variable),x="Iteration",y="Values")+
+    #scale_x_continuous(breaks=c(1,m/2,m))+
+    #scale_y_continuous(breaks=as.character(round(min(df[i,])-1,2)),as.character(round(max(df[i,])+1,2)),as.character(round(mean(df[i,]),2)))+
+    theme(plot.title = element_text(hjust=0.5,size=16,face="bold"),axis.title.x = element_text(size=10),
+          axis.title.y = element_text(size=10),axis.text.x = element_text(size=8),
+          axis.text.y = element_text(size=8))
+}
 
 
