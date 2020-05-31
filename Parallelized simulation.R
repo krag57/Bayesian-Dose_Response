@@ -104,6 +104,13 @@ alphaGamma<-function(arr,dose,subject){
   return (count)
 }
 
+tracePlotSub<-function(arr,dose){
+  par(mfrow=c(2,5))
+  for (i in 1:10){
+    traceplot(as.mcmc(alphaGamma(arr,dose,i)))
+  }
+}
+  
 trplot<-function(x){
   par(mfrow=c(2,5))
   for(l in 1:10){
@@ -128,7 +135,7 @@ priLikSigma2<-function(y,mu0,Gamma,Alpha,Sigma2){
   }
   likY<-sum(log(dtruncnorm(y[2:3,,], a=0, b=1, mean = likHoods, sd = sqrt(Sigma2))))
   likY0<-sum(log(dtruncnorm(y0, a=0, b=1, mean = mu0, sd = sqrt(Sigma2))))
-  priSigma2<-dinvgamma(Sigma2,shape = 2,scale = 1,log = T)
+  priSigma2<-dinvgamma(Sigma2,shape = 3,scale = 1,log = T)
   return(likY+likY0+priSigma2)
 }
 
@@ -152,7 +159,7 @@ priLikABCTheSig0<-function(mu0,sig0,a,b,c,theta){
   mvmean<-muMu0(a,b,c,theta,d)
   mvsigma<-diag(sqrt(sig0),nrow = 7)
   likAll<-sum(dtmvnorm(mu0, mu = mvmean,sigma = mvsigma,l=rep(0,7),u=rep(1,7),log = T))
-  priSig0<-dinvgamma(sig0,shape=1,scale=1,log=T)
+  priSig0<-dinvgamma(sig0,shape=3,scale=1,log=T)
   priA<-dunif(a,0,1,log = T)
   priB<-dunif(b,a,1,log=T)
   priC<-dunif(c,0,3.16,log=T)

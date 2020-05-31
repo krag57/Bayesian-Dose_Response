@@ -38,8 +38,10 @@ source("Parallelized simulation.R")
 d<-c(unique(AZ_628$Drug))
 cell<-c(unique(AZ_628$Cell.Line.Name))
 
-# response <- read.csv("HMS_LINCS_Viability_Data_Normalized_SRD_Sep_21.csv")
-# AZ_628_res=response[response$Small.Molecule.Name=='AZ-628',]
+response <- read.csv("HMS_LINCS_Viability_Data_Normalized_SRD_Sep_21.csv")
+AZ_628_res=response[response$Small.Molecule.Name=='AZ-628' & response $Time.Point..hr==48,c(1,6)]
+matrix(AZ_628_res[,2],ncol=7,byrow = T)
+
 
 x1<-designCell(data=AZ_628,cell=cell[1])
 x2<-designCell(data=AZ_628,cell=cell[2])
@@ -90,7 +92,7 @@ for (i in 2:7){
   GT[i,]<-GT[i-1,]+DGT[i,]
 }
 
-mu01<-0.2+((0.6-0.2)/(1+(2/d)^0.6))
+mu01<-0.1+((0.6-0.1)/(1+(2/d)^0.6))
 mu015<-matrix(0,nrow = 15,7)
 set.seed(5)
 for(i in 1:7) mu015[,i]<-msm::rtnorm(15,mu01[i],0.005,lower = 0,u=1)
@@ -117,6 +119,8 @@ for (k in 1:2){
 Z[2,,]  
 
 Y=Z[,1:10,]
+
+matplot(t(matrix(AZ_628_res[,2],ncol=7,byrow = T)),t="l")
 
 ########################################################################################################
 ########################################################################################################
@@ -240,11 +244,11 @@ for (p in 2:M){
   AAbind<-cbind(AAbind,matrix(log(resDAlpha[p,,]), ncol = 1))
   GGbind<-cbind(GGbind,matrix(log(resDGamma[p,,]), ncol = 1))
   
-  capture.output(baa<-blasso(Xbind,matrix(log(resDAlpha[p,,]), ncol = 1),RJ=F,ab=c(1,2),lambda2 = 0), file='NUL')
+  capture.output(baa<-bridge(Xbind,matrix(log(resDAlpha[p,,]), ncol = 1),RJ=F,ab=c(3,2)), file='NUL')
   beta<-colMeans(baa$beta[-(1:500),])
   s2a=(sqrt(mean(baa$s2)))
   
-  capture.output(bag<-blasso(Xbind,matrix(log(resDGamma[p,,]), ncol = 1),RJ=F,ab=c(1,.05),lambda2 = 0), file='NUL')
+  capture.output(bag<-bridge(Xbind,matrix(log(resDGamma[p,,]), ncol = 1),RJ=F,ab=c(3,2)), file='NUL')
   beta_g<-colMeans(bag$beta[-(1:500),])
   s2g=(sqrt(mean(bag$s2)))
   S2A<-c(S2A,s2a)
@@ -265,21 +269,44 @@ apply(resGamma,c(2,3),function (x) quantile(x,0.975))
 # apply(resDAlpha,c(2,3),mean)
 # AT
 # alphaGamma(resAlpha[(M/2):M,,],1,1)
-# traceplot(as.mcmc(alphaGamma(resAlpha[(M/2):M,,],7,1)))
+tracePlotSub(resAlpha[(M/2):M,,],1)
+tracePlotSub(resAlpha[(M/2):M,,],2)
+tracePlotSub(resAlpha[(M/2):M,,],3)
+tracePlotSub(resAlpha[(M/2):M,,],4)
+tracePlotSub(resAlpha[(M/2):M,,],5)
+tracePlotSub(resAlpha[(M/2):M,,],6)
+tracePlotSub(resAlpha[(M/2):M,,],7)
+
+
+tracePlotSub(resGamma[(M/2):M,,],1)
+tracePlotSub(resGamma[(M/2):M,,],2)
+tracePlotSub(resGamma[(M/2):M,,],3)
+tracePlotSub(resGamma[(M/2):M,,],4)
+tracePlotSub(resGamma[(M/2):M,,],5)
+tracePlotSub(resGamma[(M/2):M,,],6)
+tracePlotSub(resGamma[(M/2):M,,],7)
+# 
 # betaap<-rowMeans(BetaA[,-(1:M/2)])
 # betagp<-rowMeans(BetaG[,-(1:M/2)])
 # Sig<-(mean(sqrt(sig2s[-(1:M/2)])))
 # 
 par(mfrow=c(1,1))
 traceplot(as.mcmc(sig0s[-(1:M/2)]),main="Sigma0")
+quantile((sig0s[-(1:M/2)]),c(0.025,0.975))
 traceplot(as.mcmc(sig2s[-(1:M/2)]),main="Sigma2")
+quantile((sig2s[-(1:M/2)]),c(0.025,0.975))
 traceplot(as.mcmc(As[-(1:M/2)]),main="A")
+quantile((As[-(1:M/2)]),c(0.025,0.975))
 traceplot(as.mcmc(Bs[-(1:M/2)]),main="B")
+quantile((Bs[-(1:M/2)]),c(0.025,0.975))
 traceplot(as.mcmc(Cs[-(1:M/2)]),main="C")
+quantile((Cs[-(1:M/2)]),c(0.025,0.975))
 traceplot(as.mcmc(thetas[-(1:M/2)]),main="Theta")
+quantile((thetas[-(1:M/2)]),c(0.025,0.975))
 traceplot(as.mcmc(S2A[-(1:M/2)]),main="var1")
+quantile((S2A[-(1:M/2)]),c(0.025,0.975))
 traceplot(as.mcmc(S2G[-(1:M/2)]),main="var2")
-
+quantile((S2G[-(1:M/2)]),c(0.025,0.975))
 #### Postrior Mean of beta(alpha)
 rowMeans(BetaA[,-(1:M/2)])
 
