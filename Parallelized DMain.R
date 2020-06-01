@@ -122,6 +122,13 @@ Y=Z[,1:10,]
 
 matplot(t(matrix(AZ_628_res[,2],ncol=7,byrow = T)),t="l")
 
+# 1/as.vector((apply(Y,c(2,3),var)))
+# plot(as.vector((apply(Y,c(2,3),var))))
+# plot(density(1/as.vector((apply(Y,c(2,3),var)))))
+# fitdistr(1/as.vector((apply(Y,c(2,3),var))),densfun = "gamma")
+sd((apply(Y,c(2,3),var)))/2
+mean((apply(Y,c(2,3),var)))/2
+#a = 3.92901 and b = 0.150112
 ########################################################################################################
 ########################################################################################################
 
@@ -244,11 +251,11 @@ for (p in 2:M){
   AAbind<-cbind(AAbind,matrix(log(resDAlpha[p,,]), ncol = 1))
   GGbind<-cbind(GGbind,matrix(log(resDGamma[p,,]), ncol = 1))
   
-  capture.output(baa<-bridge(Xbind,matrix(log(resDAlpha[p,,]), ncol = 1),RJ=F,ab=c(3,2)), file='NUL')
+  capture.output(baa<-bridge(Xbind,matrix(log(resDAlpha[p,,]), ncol = 1),RJ=F,ab=c(3.92901,0.150112)), file='NUL')
   beta<-colMeans(baa$beta[-(1:500),])
   s2a=(sqrt(mean(baa$s2)))
   
-  capture.output(bag<-bridge(Xbind,matrix(log(resDGamma[p,,]), ncol = 1),RJ=F,ab=c(3,2)), file='NUL')
+  capture.output(bag<-bridge(Xbind,matrix(log(resDGamma[p,,]), ncol = 1),RJ=F,ab=c(3.92901,0.150112)), file='NUL')
   beta_g<-colMeans(bag$beta[-(1:500),])
   s2g=(sqrt(mean(bag$s2)))
   S2A<-c(S2A,s2a)
