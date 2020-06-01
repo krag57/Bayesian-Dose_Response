@@ -126,9 +126,16 @@ matplot(t(matrix(AZ_628_res[,2],ncol=7,byrow = T)),t="l")
 # plot(as.vector((apply(Y,c(2,3),var))))
 # plot(density(1/as.vector((apply(Y,c(2,3),var)))))
 # fitdistr(1/as.vector((apply(Y,c(2,3),var))),densfun = "gamma")
-sd((apply(Y,c(2,3),var)))/2
+sd((apply(Y,c(2,3),var)))^2
 mean((apply(Y,c(2,3),var)))/2
 #a = 3.92901 and b = 0.150112
+library("nleqslv")
+fn <- function(x) {
+  rate <- x[2]/ (x[1]-1) - mean((apply(Y,c(2,3),var)))/2
+  shape <- x[2]^2/((x[1]-1)^2*(x[1]-2))-sd((apply(Y,c(2,3),var))/2)^2
+  return(c(rate, shape))
+}
+nleqslv(c(2.1,0.1), fn)$x
 ########################################################################################################
 ########################################################################################################
 
@@ -251,11 +258,11 @@ for (p in 2:M){
   AAbind<-cbind(AAbind,matrix(log(resDAlpha[p,,]), ncol = 1))
   GGbind<-cbind(GGbind,matrix(log(resDGamma[p,,]), ncol = 1))
   
-  capture.output(baa<-bridge(Xbind,matrix(log(resDAlpha[p,,]), ncol = 1),RJ=F,ab=c(3.92901,0.150112)), file='NUL')
+  capture.output(baa<-bridge(Xbind,matrix(log(resDAlpha[p,,]), ncol = 1),RJ=F,ab=c(3.93,0.150)), file='NUL')
   beta<-colMeans(baa$beta[-(1:500),])
   s2a=(sqrt(mean(baa$s2)))
   
-  capture.output(bag<-bridge(Xbind,matrix(log(resDGamma[p,,]), ncol = 1),RJ=F,ab=c(3.92901,0.150112)), file='NUL')
+  capture.output(bag<-bridge(Xbind,matrix(log(resDGamma[p,,]), ncol = 1),RJ=F,ab=c(3.93,0.150)), file='NUL')
   beta_g<-colMeans(bag$beta[-(1:500),])
   s2g=(sqrt(mean(bag$s2)))
   S2A<-c(S2A,s2a)
@@ -454,3 +461,9 @@ p72l=apply(pre72, c(1,2), function(x) quantile(x,0.025))
 p72u=apply(pre72, c(1,2), function(x) quantile(x,0.975))
 r72
 gplotpred3(p72,p72l,p72u,r72,variable="Y @ t=72hr")
+
+
+
+
+
+
