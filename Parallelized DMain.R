@@ -154,8 +154,9 @@ fitmodel <- nls(y ~a+(b-a)/(1 + (c/x)^o ),data = cbind.data.frame(y=Y[1,1,],x=d)
 # 
 # Number of iterations to convergence: 6 
 # Achieved convergence tolerance: 3.889e-06
-
-#let shape is 3 and scale is =2*0.008085
+mean(resid(fitmodel))
+sd(resid(fitmodel))*sqrt(2)
+#let shape is 3 and scale is =2*0.008085^2
 
 
 ########################################################################################################
