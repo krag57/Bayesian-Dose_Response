@@ -136,6 +136,28 @@ fn <- function(x) {
   return(c(rate, shape))
 }
 nleqslv(c(2.1,0.1), fn)$x
+
+fitmodel <- nls(y ~a+(b-a)/(1 + (c/x)^o ),data = cbind.data.frame(y=Y[1,1,],x=d),start =list(a=0.1,b=0.4,c=2,o=1))
+# summary(fitmodel)
+# Formula: y ~ a + (b - a)/(1 + (c/x)^o)
+# 
+# Parameters:
+#   Estimate Std. Error t value Pr(>|t|)   
+# a  0.10320    0.01353   7.625  0.00468 **
+# b  0.68431    0.26452   2.587  0.08129 . 
+# c  3.04655    4.48353   0.679  0.54555   
+# o  0.58286    0.16531   3.526  0.03875 * 
+#   ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# 
+# Residual standard error: 0.008085 on 3 degrees of freedom
+# 
+# Number of iterations to convergence: 6 
+# Achieved convergence tolerance: 3.889e-06
+
+#let shape is 3 and scale is =2*0.008085
+
+
 ########################################################################################################
 ########################################################################################################
 
