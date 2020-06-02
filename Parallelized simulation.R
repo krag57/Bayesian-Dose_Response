@@ -159,7 +159,7 @@ priLikABCTheSig0<-function(mu0,sig0,a,b,c,theta){
   mvmean<-muMu0(a,b,c,theta,d)
   mvsigma<-diag(sqrt(sig0),nrow = 7)
   likAll<-sum(dtmvnorm(mu0, mu = mvmean,sigma = mvsigma,l=rep(0,7),u=rep(1,7),log = T))
-  priSig0<-dinvgamma(sig0,shape=3,scale=0.5,log=T) # scale is determined from the main function.
+  priSig0<-dinvgamma(sig0,shape=3,scale=0.01617,log=T) # scale is determined from the main function.
   priA<-dunif(a,0,1,log = T)
   priB<-dunif(b,a,1,log=T)
   priC<-dunif(c,0,3.16,log=T)
