@@ -487,6 +487,15 @@ gplotpred3(p72,p72l,p72u,r72,variable="Y @ t=72hr")
 
 
 
-
+library("fda")
+gait.data.frame <- as.data.frame(gait)
+x.gait <- vector("list", 2)
+x.gait[[1]] <- as.matrix(gait.data.frame[, 1:39])
+x.gait[[2]] <- as.matrix(gait.data.frame[, 40:78])
+library("fdANOVA")
+group.label.gait <- rep(1:3, each = 13)
+plotFANOVA(x = x.gait[[1]], int = c(0.025, 0.975))
+set.seed(123)
+fanova <- fanova.tests(x = x.gait[[1]],group.label = group.label.gait)
 
 
