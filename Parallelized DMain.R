@@ -394,7 +394,7 @@ tracePlotSub(resGamma[(M/2):M,,],7)
 # 
 par(mfrow=c(1,1))
 traceplot(as.mcmc(sig0s[-(1:M/2)]),main="Sigma0")
-quantile((sig0s[-(1:M/2)]),c(0.025,0.975))
+quantile(sqrt(sig0s[-(1:M/2)]),c(0.025,0.975))
 traceplot(as.mcmc(sig2s[-(1:M/2)]),main="Sigma2")
 quantile((sig2s[-(1:M/2)]),c(0.025,0.975))
 traceplot(as.mcmc(As[-(1:M/2)]),main="A")
