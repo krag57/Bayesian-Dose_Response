@@ -135,7 +135,7 @@ priLikSigma2<-function(y,mu0,Gamma,Alpha,Sigma2){
   }
   likY<-sum(log(dtruncnorm(y[2:3,,], a=0, b=1, mean = likHoods, sd = sqrt(Sigma2))))
   likY0<-sum(log(dtruncnorm(y0, a=0, b=1, mean = mu0, sd = sqrt(Sigma2))))
-  priSigma2<-dinvgamma(Sigma2,shape = 3,scale = 1,log = T)
+  priSigma2<-dinvgamma(Sigma2,shape = 3,scale = 0.00631,log = T)
   return(likY+likY0+priSigma2)
 }
 

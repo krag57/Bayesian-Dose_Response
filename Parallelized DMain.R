@@ -158,6 +158,73 @@ mean(resid(fitmodel))
 sd(resid(fitmodel))*sqrt(2)
 #let shape is 3 and scale is =2*0.008085^2
 
+#####################################  FANOVA   ######################################
+######################################################################################
+dosenames <- c("d1  ", "d2", "d3 ", "d4", "d5","d6","d7")
+FA=Z[3,1:10,]
+#  Set up a design matrix having a column for (the grand mean, and
+#    a column for (dose. Add a dummy contraint
+#    observation
+
+dmat<-matrix(0,7,8)
+dmat[,1] <- 1
+dmat[1:7,2:8]<-diag(1,7,7)
+#  labels for weather zones
+
+dlabels <- vector("list",8)
+dlabels[[1]] <- "Constant"
+dlabels[[2]] <- "d1"
+dlabels[[3]] <- "d2"
+dlabels[[4]] <- "d3"
+dlabels[[5]] <- "d4"
+dlabels[[6]] <- "d5"
+dlabels[[7]] <- "d6"
+dlabels[[8]] <- "d7"
+
+d36<-matrix(1,1,8)
+d36[1]<-0
+dmat   <- rbind(dmat, d36)
+
+subjectrange <- c(1,10)
+subjectbasis8 <- create.bspline.basis(subjectrange, 4)
+smoothdList <- smooth.basis(1:10,FA,subjectbasis8, fdnames=list("Subject", "dose", "response"))
+subjecttempfd  <- smoothdList$fd
+
+coef   <- subjecttempfd$coefs
+coef8 <- cbind(coef,matrix(0,4,1))
+subjecttempfd$coefs <- coef8
+
+pd <- 8
+xfddlist <- vector("list",pd)
+for (j in 1:pd) xfddlist[[j]] <- dmat[,j]
+#  set up the basis for (the regression functions
+
+betacbasis  <- create.constant.basis(subjectrange)
+betadbasis  <- create.bspline.basis(subjectrange,4)
+
+betadlist <- vector("list",pd)
+betadlist[[1]] <- betacbasis
+for (j in 2:pd) betadlist[[j]] <- betadbasis
+#  compute regression coefficient functions and
+#  predicted functions=
+fRegressdList <- fRegress(subjecttempfd, xfddlist, betadlist)
+#  plot regression functions
+# 
+# par(mfrow=c(3,3))
+# for (j in 1:pd) {
+#   betaestParfdj <- betadestlist[[j]]
+#   plot(betaestParfdj$fd, xlab="Subject", ylab="response")
+#   title(dlabels[[j]])
+# }
+#  set up predicted functions
+yhatdfdobj <- fRegressdList$yhatfdobj
+
+yhatdmat    <- eval.fd(1:10, yhatdfdobj$fd)
+ymatd       <- eval.fd(1:10, subjecttempfd)
+SSE <- sum((ymatd[,1:7] - yhatdmat[,1:7])^2)
+SSE
+
+
 
 ########################################################################################################
 ########################################################################################################
@@ -484,18 +551,3 @@ p72l=apply(pre72, c(1,2), function(x) quantile(x,0.025))
 p72u=apply(pre72, c(1,2), function(x) quantile(x,0.975))
 r72
 gplotpred3(p72,p72l,p72u,r72,variable="Y @ t=72hr")
-
-
-
-library("fda")
-gait.data.frame <- as.data.frame(gait)
-x.gait <- vector("list", 2)
-x.gait[[1]] <- as.matrix(gait.data.frame[, 1:39])
-x.gait[[2]] <- as.matrix(gait.data.frame[, 40:78])
-library("fdANOVA")
-group.label.gait <- rep(1:3, each = 13)
-plotFANOVA(x = x.gait[[1]], int = c(0.025, 0.975))
-set.seed(123)
-fanova <- fanova.tests(x = x.gait[[1]],group.label = group.label.gait)
-
-
