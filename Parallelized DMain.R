@@ -127,7 +127,6 @@ matplot(t(matrix(AZ_628_res[,2],ncol=7,byrow = T)),t="l")
 sd((apply(Y,c(2,3),var)))^2
 mean((apply(Y,c(2,3),var)))/2
 #a = 3.92901 and b = 0.150112
-library("nleqslv")
 fn <- function(x) {
   rate <- x[2]/ (x[1]-1) - mean((apply(Y,c(2,3),var)))/2
   shape <- x[2]^2/((x[1]-1)^2*(x[1]-2))-sd((apply(Y,c(2,3),var))/2)^2
