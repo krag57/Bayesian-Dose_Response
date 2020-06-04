@@ -133,7 +133,6 @@ fn <- function(x) {
   return(c(rate, shape))
 }
 nleqslv(c(2.1,0.1), fn)$x
-
 fitmodel <- nls(y ~a+(b-a)/(1 + (c/x)^o ),data = cbind.data.frame(y=Y[1,1,],x=d),start =list(a=0.1,b=0.4,c=2,o=1))
 # summary(fitmodel)
 # Formula: y ~ a + (b - a)/(1 + (c/x)^o)
