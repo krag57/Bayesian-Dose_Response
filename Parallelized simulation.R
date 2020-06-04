@@ -146,11 +146,11 @@ sig2<-posSigma2(y,mu0 = t(resMu0[p,,]),Alpha = t(resAlpha[p,,]),Gamma = t(resGam
 
 posSigma2<-function(y,mu0,Gamma,Alpha,Sigma2){
   llik<-priLikSigma2(y = y,mu0 = mu0,Gamma = Gamma,Alpha = Alpha,Sigma2 = Sigma2)
-  Sigma2.s<-rtruncnorm(1,mean =Sigma2,sd = 0.05, a=0)#abs(rnorm(1,Sigma2,sd=0.005))
+  Sigma2.s<-rtruncnorm(1,mean =Sigma2,sd = 0.005, a=0)#abs(rnorm(1,Sigma2,sd=0.005))
   llikp<-priLikSigma2(y = y,mu0 = mu0,Gamma = Gamma,Alpha = Alpha,Sigma2 = Sigma2.s)
   r = exp(llikp - llik
-          -log(dtruncnorm(Sigma2.s,mean =Sigma2,sd = 0.05, a=0))
-          +log(dtruncnorm(Sigma2,mean =Sigma2.s,sd = 0.05, a=0)))
+          -log(dtruncnorm(Sigma2.s,mean =Sigma2,sd = 0.005, a=0))
+          +log(dtruncnorm(Sigma2,mean =Sigma2.s,sd = 0.005, a=0)))
   accept<-min(1,r)
   z<-runif(1)
   if(z<accept){
@@ -225,9 +225,11 @@ posABCTheSig0<-function(mu0,sig0,a,b,c,theta){
   }
   
   likeH<-priLikABCTheSig0(mu0 = mu0,sig0 = sig0,a = a,b = b,c = c,theta = theta)
-  sig0.s<-abs(rnorm(1,sig0,sd=0.05))
+  sig0.s<-rtruncnorm(1,mean =sig0,sd = 0.005, a=0)#abs(rnorm(1,sig0,sd=0.05))
   likeHS<-priLikABCTheSig0(mu0 = mu0,sig0 = sig0.s,a = a,b = b,c = c,theta = theta)
-  r = exp(likeHS - likeH)
+  r = exp(likeHS - likeH
+          -log(dtruncnorm(sig0.s,mean =sig0,sd = 0.005, a=0))
+          +log(dtruncnorm(sig0,mean =sig0.s,sd = 0.005, a=0)))
   accept<-min(1,r)
   z<-runif(1)
   if(z<accept){
