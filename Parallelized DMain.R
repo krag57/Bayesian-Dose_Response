@@ -293,7 +293,7 @@ numCores
 i=2
 #p=2
 #p=p+1
-registerDoParallel(numCores)
+
 for (p in 2:M){
   print(p)
   #source("/home/statgrads/krag57/Parallelized simulation5.R")
@@ -305,12 +305,13 @@ for (p in 2:M){
   
   pMu0<-muMu0(a,b,c,theta,d)
   
-  
+  registerDoParallel(numCores)
   Results=foreach(i=1:10) %dopar% {
     pos_DAlpGamMu0(y=y[2:3,i,],y0=y[1,i,],mu0=resMu0[p-1,,i],dalpha=resDAlpha[p-1,,i],dgamma=resDGamma[p-1,,i],
                    XAbeta=XAbeta[,i],XGbeta=XGbeta[,i],sigma=sqrt(sig2),betaASD=s2a,betaGSD=s2g,pMu0,pSigma0=sqrt(sig0))
   }
-    
+  stopImplicitCluster()
+  
   resDAlpha[p,,]<-do.call(cbind, lapply(Results, function(x) x[, 1]))
   resDGamma[p,,]<-do.call(cbind, lapply(Results, function(x) x[, 2]))
   resMu0[p,,]<-do.call(cbind, lapply(Results, function(x) x[, 3]))
@@ -325,10 +326,10 @@ for (p in 2:M){
     resGamma[p,i,]<-resGamma[p,i-1,]+resDGamma[p,i,]
   }
   
-  sig2<-posSigma2(y,t(resMu0[p,,]),t(resAlpha[p,,]),t(resGamma[p,,]),sig2)
+  sig2<-posSigma2(y,mu0 = t(resMu0[p,,]),Alpha = t(resAlpha[p,,]),Gamma = t(resGamma[p,,]),Sigma2 = sig2)
   sig2s<-c(sig2s,sig2)
  
-  Mu0Sigma0<-posABCTheSig0(t(resMu0[p,,]),sig0,a,b,c,theta)
+  Mu0Sigma0<-posABCTheSig0(mu0 = t(resMu0[p,,]),sig0 = sig0,a = a,b = b,c = c,theta = theta)
   theta<-Mu0Sigma0[4]
   a<-Mu0Sigma0[1]
   b<-Mu0Sigma0[2]
@@ -354,7 +355,7 @@ for (p in 2:M){
   S2A<-c(S2A,s2a)
   S2G<-c(S2G,s2g)
 }
-stopImplicitCluster()
+
 
 apply(resAlpha,c(2,3),function (x) quantile(x,0.025))
 apply(resAlpha,c(2,3),mean)
@@ -547,3 +548,22 @@ p72l=apply(pre72, c(1,2), function(x) quantile(x,0.025))
 p72u=apply(pre72, c(1,2), function(x) quantile(x,0.975))
 r72
 gplotpred3(p72,p72l,p72u,r72,variable="Y @ t=72hr")
+
+
+sigmoid<-function(theta,x) 1/(1+exp(-theta*x))#-theta*x
+
+cost<-function(x,theta,y) 0.5*(sigmoid(theta,x)-y)^2
+
+x=rnorm(100, 0,1)
+y=sample(c(0,1), 100,r=T)
+theta=1
+cost(x,theta,y)
+
+J<-function(theta){
+  x=rnorm(100, 0,1)
+  y=sample(c(0,1), 100,r=T)
+  return (mean(cost(x,theta,y)))
+}
+X=seq(10,50,1)
+Y=sapply(X, J,simplify = TRUE, USE.NAMES = TRUE)
+plot(X,Y,t="l")
