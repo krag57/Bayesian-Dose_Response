@@ -130,23 +130,27 @@ estimate_mode<-function(x){
 priLikSigma2<-function(y,mu0,Gamma,Alpha,Sigma2){
   likHoods<-array(0,c(2,10,7))
   y0<-y[1,,]
+  # > likY
+  # [1] 339.3428
   for (k in 1:2){
     likHoods[k,,]<-y0*Gamma^(1-Alpha^(-k))
   }
-  likY<-sum(log(dtruncnorm(y[2:3,,], a=0, b=1, mean = likHoods, sd = sqrt(Sigma2))))
+  likY<-sum(log(dtruncnorm(y[2:3,,], a=0, b=1, mean = likHoods[1:2,,], sd = sqrt(Sigma2))))
   likY0<-sum(log(dtruncnorm(y0, a=0, b=1, mean = mu0, sd = sqrt(Sigma2))))
   priSigma2<-dinvgamma(Sigma2,shape = 5,scale = 2,log = T)
   return(likY+likY0+priSigma2)
 }
 
 
-sig2<-posSigma2(y,t(resMu0[p,,]),t(resAlpha[p,,]),t(resGamma[p,,]),sig2)
+sig2<-posSigma2(y,mu0 = t(resMu0[p,,]),Alpha = t(resAlpha[p,,]),Gamma = t(resGamma[p,,]),Sigma2 = sig2)
 
 posSigma2<-function(y,mu0,Gamma,Alpha,Sigma2){
   llik<-priLikSigma2(y = y,mu0 = mu0,Gamma = Gamma,Alpha = Alpha,Sigma2 = Sigma2)
-  Sigma2.s<-abs(rnorm(1,Sigma2,sd=0.005))
+  Sigma2.s<-rtruncnorm(1,mean =Sigma2,sd = 0.05, a=0)#abs(rnorm(1,Sigma2,sd=0.005))
   llikp<-priLikSigma2(y = y,mu0 = mu0,Gamma = Gamma,Alpha = Alpha,Sigma2 = Sigma2.s)
-  r = exp(llikp - llik)
+  r = exp(llikp - llik
+          -log(dtruncnorm(Sigma2.s,mean =Sigma2,sd = 0.05, a=0))
+          +log(dtruncnorm(Sigma2,mean =Sigma2.s,sd = 0.05, a=0)))
   accept<-min(1,r)
   z<-runif(1)
   if(z<accept){
