@@ -257,8 +257,8 @@ for (i in 1:10){
 
 M=5000
 
-sig2=0.05
-sig0=0.05
+sig2=0.0005
+sig0=0.0005
 sig2s<-c()
 sig0s<-c()
 
@@ -390,10 +390,11 @@ tracePlotSub(resGamma[(M/2):M,,],1)
 # betaap<-rowMeans(BetaA[,-(1:M/2)])
 # betagp<-rowMeans(BetaG[,-(1:M/2)])
 # Sig<-(mean(sqrt(sig2s[-(1:M/2)])))
+
 # 
 par(mfrow=c(1,1))
-traceplot(as.mcmc(sqrt(sig0s[-(1:M/2)])),main="Sigma0")
-quantile(sqrt(sig0s[-(1:M/2)]),c(0.025,0.975))
+traceplot(as.mcmc((sig0s[-(1:M/2)])),main="Sigma0")
+quantile((sig0s[-(1:M/2)]),c(0.025,0.975))
 traceplot(as.mcmc((sig2s[-(1:M/2)])),main="Sigma2")
 quantile((sig2s[-(1:M/2)]),c(0.025,0.975))
 traceplot(as.mcmc(As[-(1:M/2)]),main="A")
@@ -469,7 +470,7 @@ GammaHat<-array(0,c(7,5,dim(BetaG[,-(1:M/2)])[2]))
 for (r in 1:dim(BetaG[,-(1:M/2)])[2]){
   DG=matrix(0,nrow = 7,5)
   for(i in 1:5){
-    DG[,i]=rlnorm(7,dta15[[10+i]]%*%BetaG[,(M/2)+r],sdlog =sqrt(sig0s[(M/2)+r]) )
+    DG[,i]=exp(dta15[[10+i]]%*%BetaG[,(M/2)+r])
   }
   
   GThat=matrix(0,nrow = 7,5)
