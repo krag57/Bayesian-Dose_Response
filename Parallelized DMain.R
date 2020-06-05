@@ -255,7 +255,7 @@ for (i in 1:10){
   ga_int<-cbind(ga_int,sample(seq(1.10,1.51,length.out = 20),size = 7))
 }
 
-M=10000
+M=5000
 
 sig2=0.05
 sig0=0.05
@@ -392,9 +392,9 @@ tracePlotSub(resGamma[(M/2):M,,],1)
 # Sig<-(mean(sqrt(sig2s[-(1:M/2)])))
 # 
 par(mfrow=c(1,1))
-traceplot(as.mcmc(sig0s[-(1:M/2)]),main="Sigma0")
+traceplot(as.mcmc(sqrt(sig0s[-(1:M/2)])),main="Sigma0")
 quantile(sqrt(sig0s[-(1:M/2)]),c(0.025,0.975))
-traceplot(as.mcmc(sig2s[-(1:M/2)]),main="Sigma2")
+traceplot(as.mcmc((sig2s[-(1:M/2)])),main="Sigma2")
 quantile((sig2s[-(1:M/2)]),c(0.025,0.975))
 traceplot(as.mcmc(As[-(1:M/2)]),main="A")
 quantile((As[-(1:M/2)]),c(0.025,0.975))
@@ -469,7 +469,7 @@ GammaHat<-array(0,c(7,5,dim(BetaG[,-(1:M/2)])[2]))
 for (r in 1:dim(BetaG[,-(1:M/2)])[2]){
   DG=matrix(0,nrow = 7,5)
   for(i in 1:5){
-    DG[,i]=exp(dta15[[10+i]]%*%BetaG[,(M/2)+r])
+    DG[,i]=rlnorm(7,dta15[[10+i]]%*%BetaG[,(M/2)+r],sdlog =sqrt(sig0s[(M/2)+r]) )
   }
   
   GThat=matrix(0,nrow = 7,5)
@@ -517,7 +517,7 @@ r72<-Z[3,11:15,]
 y0pp<-matrix(as.vector(y0p),nrow = 7,ncol = 5,byrow = T)
 pre48<-array(0,c(5,7,dim(GammaHat)[3]))
 for (r in 1:dim(GammaHat)[3]){
-  Sig<-sqrt(sig2s[(M/2)+r])
+  Sig<-(sig2s[(M/2)+r])
   # yt<-c()
   # for (i in 1:5){
   #   yi<-(msm::rtnorm(7,y0pp[,i]*t(GammaHat[,i,r])^(1-t(AlphaHat[,i,r])^(-1)),Sig,lower = 0,u=1))
@@ -537,7 +537,7 @@ gplotpred3(p48,p48l,p48u,r48,variable="Y @ t=48hr")
 
 pre72<-array(0,c(5,7,dim(GammaHat)[3]))
 for (r in 1:dim(GammaHat)[3]){
-  Sig<-sqrt(sig2s[(M/2)+r])
+  Sig<-(sig2s[(M/2)+r])
   p721dist<-rtmvnorm(1,mu =as.vector(y0pp*GammaHat[,,r]^(1-AlphaHat[,,r]^(-2))),sigma = diag(Sig,35), lb = rep(0,35),ub = rep(1,35))
   p721<-matrix(p721dist,5,7,byrow = T)
   pre72[,,r]<-p721

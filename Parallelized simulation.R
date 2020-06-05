@@ -127,30 +127,31 @@ estimate_mode<-function(x){
   return (round(d$x[which.max(d$y)],6))
 }
 
+
 priLikSigma2<-function(y,mu0,Gamma,Alpha,Sigma2){
   likHoods<-array(0,c(2,10,7))
   y0<-y[1,,]
-  # > likY
-  # [1] 339.3428
   for (k in 1:2){
     likHoods[k,,]<-y0*Gamma^(1-Alpha^(-k))
   }
-  likY<-sum(log(dtruncnorm(y[2:3,,], a=0, b=1, mean = likHoods[1:2,,], sd = sqrt(Sigma2))))
-  likY0<-sum(log(dtruncnorm(y0, a=0, b=1, mean = mu0, sd = sqrt(Sigma2))))
-  priSigma2<-dinvgamma(Sigma2,shape = 5,scale = 2,log = T)
+  likY<-sum(log(dtruncnorm(y[2:3,,], a=0, b=1, mean = likHoods[1:2,,], sd = sqrt(Sigma2))))#sum(msm::dtnorm(y[2:3,,],likHoods[1:2,,],sqrt(Sigma2),lower = 0,u=1,log = T))#
+  likY0<-sum(log(dtruncnorm(y0, a=0, b=1, mean = mu0, sd = sqrt(Sigma2))))#sum(msm::dtnorm(y0,mu0,sqrt(Sigma2),lower = 0,u=1,log = T))#
+  priSigma2<-log(MCMCpack::dinvgamma(Sigma2,shape = 3,scale = 0.0036*2))#dinvgamma(10,shape = 3,scale = 0.0036*2,log = T)#0.0036*5
+  #dinvgamma(Sigma2,shape = 3,scale = 0.0036*2,log = T)
+  #log(((0.0072^3)*10^-4*exp(-0.0072/10))/2)
+  #plot(density(rgamma(10000,shape = 3,scale = 0.0036*2)))
   return(likY+likY0+priSigma2)
 }
-
-
-sig2<-posSigma2(y,mu0 = t(resMu0[p,,]),Alpha = t(resAlpha[p,,]),Gamma = t(resGamma[p,,]),Sigma2 = sig2)
+#sig2<-posSigma2(y,mu0 = t(resMu0[p,,]),Alpha = t(resAlpha[p,,]),Gamma = t(resGamma[p,,]),Sigma2 = sig2)
+#That's ok since scale = 1/rate
 
 posSigma2<-function(y,mu0,Gamma,Alpha,Sigma2){
   llik<-priLikSigma2(y = y,mu0 = mu0,Gamma = Gamma,Alpha = Alpha,Sigma2 = Sigma2)
-  Sigma2.s<-rtruncnorm(1,mean =Sigma2,sd = 0.005, a=0)#abs(rnorm(1,Sigma2,sd=0.005))
+  Sigma2.s<-abs(rnorm(1,Sigma2,sd=0.005))#rtruncnorm(1,mean =Sigma2,sd = 0.005, a=0)#abs(rnorm(1,Sigma2,sd=0.005))#Sigma2.s=0.0002
   llikp<-priLikSigma2(y = y,mu0 = mu0,Gamma = Gamma,Alpha = Alpha,Sigma2 = Sigma2.s)
-  r = exp(llikp - llik
-          -log(dtruncnorm(Sigma2.s,mean =Sigma2,sd = 0.005, a=0))
-          +log(dtruncnorm(Sigma2,mean =Sigma2.s,sd = 0.005, a=0)))
+  r = exp(llikp - llik)
+          #-log(dtruncnorm(Sigma2.s,mean =Sigma2,sd = 0.005, a=0))
+          #+log(dtruncnorm(Sigma2,mean =Sigma2.s,sd = 0.005, a=0)))
   accept<-min(1,r)
   z<-runif(1)
   if(z<accept){
@@ -159,14 +160,14 @@ posSigma2<-function(y,mu0,Gamma,Alpha,Sigma2){
   return (Sigma2)
 }
 
-
 muMu0<-function(a,b,c,theta,d) a+((b-a)/(1+(c/d)^theta))
+
 priLikABCTheSig0<-function(mu0,sig0,a,b,c,theta){
   d<-c(0.0032, 0.0100, 0.0316, 0.1000 ,0.3160 ,1.0000, 3.1600)
   mvmean<-muMu0(a,b,c,theta,d)
   mvsigma<-diag(sqrt(sig0),nrow = 7)
   likAll<-sum(dtmvnorm(mu0, mu = mvmean,sigma = mvsigma,l=rep(0,7),u=rep(1,7),log = T))
-  priSig0<-dinvgamma(sig0,shape=5,scale=2,log=T) # scale is determined from the main function.
+  priSig0<-log(MCMCpack::dinvgamma(sig0,shape = 3,scale = 0.008*2))#dgamma(sig0,shape = 6,scale = 0.008/5,log=T) # scale is determined from the main function.
   priA<-dunif(a,0,1,log = T)
   priB<-dunif(b,a,1,log=T)
   priC<-dunif(c,0,3.16,log=T)
@@ -225,11 +226,11 @@ posABCTheSig0<-function(mu0,sig0,a,b,c,theta){
   }
   
   likeH<-priLikABCTheSig0(mu0 = mu0,sig0 = sig0,a = a,b = b,c = c,theta = theta)
-  sig0.s<-rtruncnorm(1,mean =sig0,sd = 0.005, a=0)#abs(rnorm(1,sig0,sd=0.05))
+  sig0.s<-abs(rnorm(1,sig0,sd=0.005))#rtruncnorm(1,mean =sig0,sd = 0.005, a=0)#
   likeHS<-priLikABCTheSig0(mu0 = mu0,sig0 = sig0.s,a = a,b = b,c = c,theta = theta)
-  r = exp(likeHS - likeH
-          -log(dtruncnorm(sig0.s,mean =sig0,sd = 0.005, a=0))
-          +log(dtruncnorm(sig0,mean =sig0.s,sd = 0.005, a=0)))
+  r = exp(likeHS - likeH)
+          #-log(dtruncnorm(sig0.s,mean =sig0,sd = 0.005, a=0))
+          #+log(dtruncnorm(sig0,mean =sig0.s,sd = 0.005, a=0)))
   accept<-min(1,r)
   z<-runif(1)
   if(z<accept){
