@@ -157,7 +157,7 @@ sd(resid(fitmodel))*sqrt(2)
 #####################################  FANOVA   ######################################
 ######################################################################################
 dosenames <- c("d1  ", "d2", "d3 ", "d4", "d5","d6","d7")
-FA=Z[3,1:10,]
+FA=Z[1,1:10,]
 #  Set up a design matrix having a column for (the grand mean, and
 #    a column for (dose. Add a dummy contraint
 #    observation
@@ -455,9 +455,8 @@ AlphaHat<-array(0,c(7,5,dim(BetaA[,-(1:M/2)])[2]))
 for (r in 1:dim(BetaA[,-(1:M/2)])[2]){
   DA=matrix(0,nrow = 7,5)
   for(i in 1:5){
-    DA[,i]=exp(dta15[[10+i]]%*%BetaA[,(M/2)+r])
+    DA[,i]=rlnorm(7,(dta15[[10+i]]%*%BetaA[,(M/2)+r]),sqrt(sig0s[(M/2)+r]))
   }
-  
   AThat=matrix(0,nrow = 7,5)
   AThat[1,]<-DA[1,]+1
   for (i in 2:7){
