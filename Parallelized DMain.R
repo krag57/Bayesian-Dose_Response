@@ -151,13 +151,13 @@ fitmodel <- nls(y ~a+(b-a)/(1 + (c/x)^o ),data = cbind.data.frame(y=Y[1,1,],x=d)
 # Number of iterations to convergence: 6 
 # Achieved convergence tolerance: 3.889e-06
 mean(resid(fitmodel))
-sd(resid(fitmodel))*sqrt(2)
+sum(resid(fitmodel)^2)
 #let shape is 3 and scale is =2*0.008085^2
 
 #####################################  FANOVA   ######################################
 ######################################################################################
 dosenames <- c("d1  ", "d2", "d3 ", "d4", "d5","d6","d7")
-FA=Z[1,1:10,]
+FA=Z[2,1:10,]
 #  Set up a design matrix having a column for (the grand mean, and
 #    a column for (dose. Add a dummy contraint
 #    observation
@@ -255,7 +255,7 @@ for (i in 1:10){
   ga_int<-cbind(ga_int,sample(seq(1.10,1.51,length.out = 20),size = 7))
 }
 
-M=5000
+M=10000
 
 sig2=0.0005
 sig0=0.0005
@@ -394,9 +394,9 @@ tracePlotSub(resGamma[(M/2):M,,],1)
 # 
 par(mfrow=c(1,1))
 traceplot(as.mcmc((sig0s[-(1:M/2)])),main="Sigma0")
-quantile((sig0s[-(1:M/2)]),c(0.025,0.975))
+quantile(sqrt(sig0s[-(1:M/2)]),c(0.025,0.975))
 traceplot(as.mcmc((sig2s[-(1:M/2)])),main="Sigma2")
-quantile((sig2s[-(1:M/2)]),c(0.025,0.975))
+quantile(sqrt(sig2s[-(1:M/2)]),c(0.025,0.975))
 traceplot(as.mcmc(As[-(1:M/2)]),main="A")
 quantile((As[-(1:M/2)]),c(0.025,0.975))
 traceplot(as.mcmc(Bs[-(1:M/2)]),main="B")
@@ -499,13 +499,13 @@ ac=cbind(am,an)
 acl=cbind(al,anl)
 acu=cbind(au,anu)
 AT
-gplotpred3(t(ac),t(acl),t(acu),t(AT),variable="Alpha")
+#gplotpred3(t(ac),t(acl),t(acu),t(AT),variable="Alpha")
 
 gc=cbind(gm,gn)
 gcl=cbind(gl,gnl)
 gcu=cbind(gu,gnu)
 GT
-gplotpred3(t(gc),t(gcl),t(gcu),t(GT),variable="Gamma")
+#gplotpred3(t(gc),t(gcl),t(gcu),t(GT),variable="Gamma")
 
 
 y0p<-Z[1,11:15,]

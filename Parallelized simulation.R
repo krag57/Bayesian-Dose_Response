@@ -56,11 +56,11 @@ pos_DAlpGamMu0<-function(y,y0,mu0,dalpha,dgamma,XAbeta,XGbeta,sigma,betaASD,beta
   pre.dgamma=c(0,dgamma)
   for(i in 1:7){
     llik<-priLikDAlpha(y = y[,i],y0 = y0[i],dalpha = dalpha[i],dgamma = dgamma[i],pre.dalpha = pre.dalpha[i],pre.dgamma = pre.dgamma[i],xabeta = XAbeta[i],sigma = sigma,betaSD = betaASD)
-    dalpha.s<-rtruncnorm(1,mean = dalpha[i],sd = 1,a=0)
+    dalpha.s<-rtruncnorm(1,mean = dalpha[i],sd =.5,a=0)
     llikp<-priLikDAlpha(y = y[,i],y0 = y0[i],dalpha = dalpha.s,dgamma = dgamma[i],pre.dalpha = pre.dalpha[i],pre.dgamma = pre.dgamma[i],xabeta = XAbeta[i],sigma = sigma,betaSD = betaASD)
     r = exp(llikp - llik
-            -log(dtruncnorm(dalpha.s, mean=dalpha[i], sd=1, a=0))
-            +log(dtruncnorm(dalpha[i], mean=dalpha.s, sd=1, a=0)))
+            -log(dtruncnorm(dalpha.s, mean=dalpha[i], sd=.5, a=0))
+            +log(dtruncnorm(dalpha[i], mean=dalpha.s, sd=.5, a=0)))
     accept<-min(1,r)
     z<-runif(1)
     if(z<accept){
@@ -69,11 +69,11 @@ pos_DAlpGamMu0<-function(y,y0,mu0,dalpha,dgamma,XAbeta,XGbeta,sigma,betaASD,beta
     }
     
     llikG<-priLikDGamma(y = y[,i],y0 = y0[i],dalpha=dalpha[i],dgamma = dgamma[i],pre.dalpha = pre.dalpha[i],pre.dgamma = pre.dgamma[i],xgbeta = XGbeta[i],sigma = sigma,betaSD = betaGSD)
-    dgamma.s<-rtruncnorm(1,mean = dgamma[i],sd = 1, a=0)
+    dgamma.s<-rtruncnorm(1,mean = dgamma[i],sd = .5, a=0)
     llikpG<-priLikDGamma(y = y[,i],y0 = y0[i],dalpha=dalpha[i],dgamma = dgamma.s,pre.dalpha = pre.dalpha[i],pre.dgamma = pre.dgamma[i],xgbeta = XGbeta[i],sigma = sigma,betaSD = betaGSD)
     r = exp(llikpG - llikG
-            -log(dtruncnorm(dgamma.s, mean=dgamma[i], sd=1, a=0))
-            +log(dtruncnorm(dgamma[i], mean=dgamma.s, sd=1, a=0)))
+            -log(dtruncnorm(dgamma.s, mean=dgamma[i], sd=.5, a=0))
+            +log(dtruncnorm(dgamma[i], mean=dgamma.s, sd=.5, a=0)))
     accept<-min(1,r)
     z<-runif(1)
     if(z<accept){
@@ -82,7 +82,7 @@ pos_DAlpGamMu0<-function(y,y0,mu0,dalpha,dgamma,XAbeta,XGbeta,sigma,betaASD,beta
     }
     
     llikM<-priLikDMu0(y0 = y0[i],mu0 = mu0[i],sigma = sigma,pMu0 = pMu0[i],pSigma0 = pSigma0)
-    Mu0.s<-rtruncnorm(1,mean =mu0[i],sd = 0.5, a=0,b=1)
+    Mu0.s<-rtruncnorm(1,mean =mu0[i],sd = 0.1, a=0,b=1)
     llikpM<-priLikDMu0(y0 = y0[i],mu0 = Mu0.s,sigma = sigma,pMu0 = pMu0[i],pSigma0 = pSigma0)
     r = exp(llikpM - llikM
             -log(dtruncnorm(Mu0.s,mean =mu0[i],sd = 0.5, a=0, b=1))
@@ -95,6 +95,7 @@ pos_DAlpGamMu0<-function(y,y0,mu0,dalpha,dgamma,XAbeta,XGbeta,sigma,betaASD,beta
   }
   return (cbind(dalpha,dgamma,mu0))
 }
+
 
 alphaGamma<-function(arr,dose,subject){
   count=c()
@@ -136,7 +137,7 @@ priLikSigma2<-function(y,mu0,Gamma,Alpha,Sigma2){
   }
   likY<-sum(log(dtruncnorm(y[2:3,,], a=0, b=1, mean = likHoods[1:2,,], sd = sqrt(Sigma2))))#sum(msm::dtnorm(y[2:3,,],likHoods[1:2,,],sqrt(Sigma2),lower = 0,u=1,log = T))#
   likY0<-sum(log(dtruncnorm(y0, a=0, b=1, mean = mu0, sd = sqrt(Sigma2))))#sum(msm::dtnorm(y0,mu0,sqrt(Sigma2),lower = 0,u=1,log = T))#
-  priSigma2<-log(MCMCpack::dinvgamma(Sigma2,shape = 10,scale = 0.0036*9))#dinvgamma(10,shape = 3,scale = 0.0036*2,log = T)#0.0036*5
+  priSigma2<-log(MCMCpack::dinvgamma(Sigma2,shape = 3,scale = 0.00306*2))#dinvgamma(10,shape = 3,scale = 0.0036*2,log = T)#0.0036*5
   #dinvgamma(Sigma2,shape = 3,scale = 0.0036*2,log = T)
   #log(((0.0072^3)*10^-4*exp(-0.0072/10))/2)
   #plot(density(rgamma(10000,shape = 3,scale = 0.0036*2)))
@@ -167,7 +168,7 @@ priLikABCTheSig0<-function(mu0,sig0,a,b,c,theta){
   mvmean<-muMu0(a,b,c,theta,d)
   mvsigma<-diag(sqrt(sig0),nrow = 7)
   likAll<-sum(dtmvnorm(mu0, mu = mvmean,sigma = mvsigma,l=rep(0,7),u=rep(1,7),log = T))
-  priSig0<-log(MCMCpack::dinvgamma(sig0,shape = 6,scale = 0.0008*5))#dgamma(sig0,shape = 6,scale = 0.008/5,log=T) # scale is determined from the main function.
+  priSig0<-log(MCMCpack::dinvgamma(sig0,shape = 3,scale = 0.0001960908*2))#dgamma(sig0,shape = 6,scale = 0.008/5,log=T) # scale is determined from the main function.
   priA<-dunif(a,0,1,log = T)
   priB<-dunif(b,a,1,log=T)
   priC<-dunif(c,0,3.16,log=T)
@@ -226,7 +227,7 @@ posABCTheSig0<-function(mu0,sig0,a,b,c,theta){
   }
   
   likeH<-priLikABCTheSig0(mu0 = mu0,sig0 = sig0,a = a,b = b,c = c,theta = theta)
-  sig0.s<-abs(rnorm(1,sig0,sd=0.0005))#rtruncnorm(1,mean =sig0,sd = 0.005, a=0)#
+  sig0.s<-abs(rnorm(1,sig0,sd=0.00005))#rtruncnorm(1,mean =sig0,sd = 0.005, a=0)#
   likeHS<-priLikABCTheSig0(mu0 = mu0,sig0 = sig0.s,a = a,b = b,c = c,theta = theta)
   r = exp(likeHS - likeH)
           #-log(dtruncnorm(sig0.s,mean =sig0,sd = 0.005, a=0))
