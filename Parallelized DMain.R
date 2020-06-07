@@ -157,7 +157,7 @@ sum(resid(fitmodel)^2)
 #####################################  FANOVA   ######################################
 ######################################################################################
 dosenames <- c("d1  ", "d2", "d3 ", "d4", "d5","d6","d7")
-FA=Z[2,1:10,]
+FA=Z[1,1:10,]
 #  Set up a design matrix having a column for (the grand mean, and
 #    a column for (dose. Add a dummy contraint
 #    observation
@@ -393,10 +393,10 @@ tracePlotSub(resGamma[(M/2):M,,],1)
 
 # 
 par(mfrow=c(1,1))
-traceplot(as.mcmc((sig0s[-(1:M/2)])),main="Sigma0")
+traceplot(as.mcmc(sqrt(sig0s[-(1:M/2)])),main="Sigma0")
 quantile(sqrt(sig0s[-(1:M/2)]),c(0.025,0.975))
-traceplot(as.mcmc((sig2s[-(1:M/2)])),main="Sigma2")
-quantile(sqrt(sig2s[-(1:M/2)]),c(0.025,0.975))
+traceplot(as.mcmc((sig2s[-(1:M/2)])),main="Sigma1")
+quantile((sig2s[-(1:M/2)]),c(0.025,0.975))
 traceplot(as.mcmc(As[-(1:M/2)]),main="A")
 quantile((As[-(1:M/2)]),c(0.025,0.975))
 traceplot(as.mcmc(Bs[-(1:M/2)]),main="B")
@@ -455,7 +455,7 @@ AlphaHat<-array(0,c(7,5,dim(BetaA[,-(1:M/2)])[2]))
 for (r in 1:dim(BetaA[,-(1:M/2)])[2]){
   DA=matrix(0,nrow = 7,5)
   for(i in 1:5){
-    DA[,i]=rlnorm(7,(dta15[[10+i]]%*%BetaA[,(M/2)+r]),sqrt(sig0s[(M/2)+r]))
+    DA[,i]=exp(dta15[[10+i]]%*%BetaA[,(M/2)+r])
   }
   AThat=matrix(0,nrow = 7,5)
   AThat[1,]<-DA[1,]+1
@@ -517,7 +517,7 @@ r72<-Z[3,11:15,]
 y0pp<-matrix(as.vector(y0p),nrow = 7,ncol = 5,byrow = T)
 pre48<-array(0,c(5,7,dim(GammaHat)[3]))
 for (r in 1:dim(GammaHat)[3]){
-  Sig<-(sig2s[(M/2)+r])
+  Sig<-sqrt(sig2s[(M/2)+r])
   # yt<-c()
   # for (i in 1:5){
   #   yi<-(msm::rtnorm(7,y0pp[,i]*t(GammaHat[,i,r])^(1-t(AlphaHat[,i,r])^(-1)),Sig,lower = 0,u=1))

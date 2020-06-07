@@ -85,8 +85,8 @@ pos_DAlpGamMu0<-function(y,y0,mu0,dalpha,dgamma,XAbeta,XGbeta,sigma,betaASD,beta
     Mu0.s<-rtruncnorm(1,mean =mu0[i],sd = 0.1, a=0,b=1)
     llikpM<-priLikDMu0(y0 = y0[i],mu0 = Mu0.s,sigma = sigma,pMu0 = pMu0[i],pSigma0 = pSigma0)
     r = exp(llikpM - llikM
-            -log(dtruncnorm(Mu0.s,mean =mu0[i],sd = 0.5, a=0, b=1))
-            +log(dtruncnorm(mu0[i],mean =Mu0.s,sd = 0.5, a=0, b=1)))
+            -log(dtruncnorm(Mu0.s,mean =mu0[i],sd = 0.1, a=0, b=1))
+            +log(dtruncnorm(mu0[i],mean =Mu0.s,sd = 0.1, a=0, b=1)))
     accept<-min(1,r)
     z<-runif(1)
     if(z<accept){
@@ -137,7 +137,7 @@ priLikSigma2<-function(y,mu0,Gamma,Alpha,Sigma2){
   }
   likY<-sum(log(dtruncnorm(y[2:3,,], a=0, b=1, mean = likHoods[1:2,,], sd = sqrt(Sigma2))))#sum(msm::dtnorm(y[2:3,,],likHoods[1:2,,],sqrt(Sigma2),lower = 0,u=1,log = T))#
   likY0<-sum(log(dtruncnorm(y0, a=0, b=1, mean = mu0, sd = sqrt(Sigma2))))#sum(msm::dtnorm(y0,mu0,sqrt(Sigma2),lower = 0,u=1,log = T))#
-  priSigma2<-log(MCMCpack::dinvgamma(Sigma2,shape = 3,scale = 0.00306*2))#dinvgamma(10,shape = 3,scale = 0.0036*2,log = T)#0.0036*5
+  priSigma2<-log(MCMCpack::dinvgamma(Sigma2,shape = 3,scale = 0.0001528*2))#dinvgamma(10,shape = 3,scale = 0.0036*2,log = T)#0.0036*5
   #dinvgamma(Sigma2,shape = 3,scale = 0.0036*2,log = T)
   #log(((0.0072^3)*10^-4*exp(-0.0072/10))/2)
   #plot(density(rgamma(10000,shape = 3,scale = 0.0036*2)))
