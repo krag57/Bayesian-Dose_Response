@@ -321,11 +321,11 @@ for (p in 2:M){
   for (i in 2:7){
     resGamma[p,i,]<-resGamma[p,i-1,]+resDGamma[p,i,]
   }
-  print(p)
+  #print(p)
   sig2<-posSigma2(y,Alpha = t(resAlpha[p,,]),Gamma = t(resGamma[p,,]),Sigma2 = sig2)
   sig2s<-c(sig2s,sig2)
   
-  print(p)
+  #print(p)
   Mu0Sigma0<-posABCTheSig0(y0 = y[1,,],sig0 = sig0,a = a,b = b,c = c,theta = theta)
   theta<-Mu0Sigma0[4]
   a<-Mu0Sigma0[1]
@@ -342,7 +342,7 @@ for (p in 2:M){
   AAbind<-cbind(AAbind,matrix(log(resDAlpha[p,,]), ncol = 1))
   GGbind<-cbind(GGbind,matrix(log(resDGamma[p,,]), ncol = 1))
   
-  capture.output(baa<-bridge(Xbind,matrix(log(resDAlpha[p,,]), ncol = 1),RJ=F,ab=c(5.92,0.0509*1.92)), file='NUL')
+  capture.output(baa<-bridge(Xbind,matrix(log(resDAlpha[p,,]), ncol = 1),RJ=F,ab=c(2.92,0.0509*1.92)), file='NUL')
   beta<-colMeans(baa$beta[-(1:500),])
   s2a=(sqrt(mean(baa$s2)))
   
@@ -514,7 +514,7 @@ r72<-Z[3,11:15,]
 y0pp<-matrix(as.vector(y0p),nrow = 7,ncol = 5,byrow = T)
 pre48<-array(0,c(5,7,dim(GammaHat)[3]))
 for (r in 1:dim(GammaHat)[3]){
-  Sig<-(sig2s[(M/2)+r])
+  Sig<-sqrt(sig2s[(M/2)+r])
   p481dist<-rtmvnorm(1,mu =as.vector(y0pp*GammaHat[,,r]^(1-AlphaHat[,,r]^(-1))),sigma = diag(Sig,35), lb = rep(0,35),ub = rep(1,35))
   p481<-matrix(p481dist,5,7,byrow = T)
   pre48[,,r]<-p481

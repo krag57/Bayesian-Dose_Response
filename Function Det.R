@@ -46,7 +46,7 @@ priLikDGamma<-function(y,y0,dalpha,dgamma,pre.dalpha,pre.dgamma,xgbeta,sigma,bet
   mu_tilde<-y0*(dgamma+pre.dgamma+1)^(1-(dalpha+pre.dalpha+1)^(-t))
   likDGamma<-sum(ifelse(dtnorm(y, low=0, upp=1, mean = mu_tilde, sd = sigma,log=T)==Inf,0,dtnorm(y, low=0, upp=1, mean = mu_tilde, sd = sigma,log=T)))
   #likDGamma<-sum(dtnorm(y, low=0, upp=1, mean = mu_tilde, sd = sigma,log=T))#sum(log(dtruncnorm(y, a=0, b=1, mean = mu_tilde, sd = sigma)))
-  priDGamma<-log(dtruncnorm(dgamma, a=0, mean = xgbeta, sd = betaSD))#dlnorm(dgamma,meanlog =xgbeta,sdlog =betaSD,log=T)#dunif(dgamma,exp(xgbeta)-(sqrt(3)*betaSD),max =exp(xgbeta)+(sqrt(3)*betaSD),log=T)#
+  priDGamma<-dtnorm(dgamma, low=0,  mean = xgbeta, sd = betaSD,log=T)#log(dtruncnorm(dgamma, a=0, mean = xgbeta, sd = betaSD))#dlnorm(dgamma,meanlog =xgbeta,sdlog =betaSD,log=T)#dunif(dgamma,exp(xgbeta)-(sqrt(3)*betaSD),max =exp(xgbeta)+(sqrt(3)*betaSD),log=T)#
   return (likDGamma+priDGamma)
 }
 
