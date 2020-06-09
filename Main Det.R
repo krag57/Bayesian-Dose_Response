@@ -252,7 +252,7 @@ for (i in 1:10){
   ga_int<-cbind(ga_int,sample(seq(1.10,1.51,length.out = 20),size = 7))
 }
 
-M=5000
+M=10000
 
 sig2=0.00002
 sig0=0.00005
@@ -388,12 +388,35 @@ tracePlotSub(resGamma[(M/2):M,,],1)
 # betagp<-rowMeans(BetaG[,-(1:M/2)])
 # Sig<-(mean(sqrt(sig2s[-(1:M/2)])))
 
-# 
+ParaInfoSubAlpha(AT[,1],resAlpha[(M/2):M,,],1)
+ParaInfoSubAlpha(AT[,2],resAlpha[(M/2):M,,],2)
+ParaInfoSubAlpha(AT[,3],resAlpha[(M/2):M,,],3)
+ParaInfoSubAlpha(AT[,4],resAlpha[(M/2):M,,],4)
+ParaInfoSubAlpha(AT[,5],resAlpha[(M/2):M,,],5)
+ParaInfoSubAlpha(AT[,6],resAlpha[(M/2):M,,],6)
+ParaInfoSubAlpha(AT[,7],resAlpha[(M/2):M,,],7)
+ParaInfoSubAlpha(AT[,8],resAlpha[(M/2):M,,],8)
+ParaInfoSubAlpha(AT[,9],resAlpha[(M/2):M,,],9)
+ParaInfoSubAlpha(AT[,10],resAlpha[(M/2):M,,],10)
+
+ParaInfoSubGamma(GT[,1],resGamma[(M/2):M,,],1)
+ParaInfoSubGamma(GT[,2],resGamma[(M/2):M,,],2)
+ParaInfoSubGamma(GT[,3],resGamma[(M/2):M,,],3)
+ParaInfoSubGamma(GT[,4],resGamma[(M/2):M,,],4)
+ParaInfoSubGamma(GT[,5],resGamma[(M/2):M,,],5)
+ParaInfoSubGamma(GT[,6],resGamma[(M/2):M,,],6)
+ParaInfoSubGamma(GT[,7],resGamma[(M/2):M,,],7)
+ParaInfoSubGamma(GT[,8],resGamma[(M/2):M,,],8)
+ParaInfoSubGamma(GT[,9],resGamma[(M/2):M,,],9)
+ParaInfoSubGamma(GT[,10],resGamma[(M/2):M,,],10)
+
+
+
 par(mfrow=c(1,1))
 traceplot(as.mcmc(sqrt(sig0s[-(1:M/2)])),main="Sigma0")
 quantile(sqrt(sig0s[-(1:M/2)]),c(0.025,0.975))
-traceplot(as.mcmc((sig2s[-(1:M/2)])),main="Sigma1")
-quantile((sig2s[-(1:M/2)]),c(0.025,0.975))
+traceplot(as.mcmc(sqrt(sig2s[-(1:M/2)]/500)),main="Sigma1")
+quantile(sqrt(sig2s[-(1:M/2)]/500),c(0.025,0.975))
 traceplot(as.mcmc(As[-(1:M/2)]),main="A")
 quantile((As[-(1:M/2)]),c(0.025,0.975))
 traceplot(as.mcmc(Bs[-(1:M/2)]),main="B")
@@ -406,7 +429,33 @@ traceplot(as.mcmc(S2A[-(1:M/2)]),main="var1")
 quantile((S2A[-(1:M/2)]),c(0.025,0.975))
 traceplot(as.mcmc(S2G[-(1:M/2)]),main="var2")
 quantile((S2G[-(1:M/2)]),c(0.025,0.975))
-#### Postrior Mean of beta(alpha)
+
+ParaInfoVectors(0.005,sqrt(sig0s[-(1:M/2)]),name="Sigma0")
+ParaInfoVectors(0.005,sqrt(sig2s[-(1:M/2)]/5),name="Sigma1")
+ParaInfoVectors(0.1,(As[-(1:M/2)]),name="A")
+ParaInfoVectors(0.7,(Bs[-(1:M/2)]),name="B")
+ParaInfoVectors(1,(Cs[-(1:M/2)]),name="C")
+ParaInfoVectors(0.8,(thetas[-(1:M/2)]),name="theta")
+ParaInfoVectors(1,(S2A[-(1:M/2)]),name="PrVaAl")
+ParaInfoVectors(0.5,(S2G[-(1:M/2)]),name="PrVaGa")
+
+
+ParaInfoBetas(betaa,BetaA[,-(1:M/2)])
+ParaInfoBetas(betag,BetaG[,-(1:M/2)])
+
+ParaInfoSubAlphaHat(AT[,11],AlphaHat,1)
+ParaInfoSubAlphaHat(AT[,12],AlphaHat,2)
+ParaInfoSubAlphaHat(AT[,13],AlphaHat,3)
+ParaInfoSubAlphaHat(AT[,14],AlphaHat,4)
+ParaInfoSubAlphaHat(AT[,15],AlphaHat,5)
+
+ParaInfoSubAlphaHat(GT[,11],GammaHat,1)
+ParaInfoSubAlphaHat(GT[,12],GammaHat,2)
+ParaInfoSubAlphaHat(GT[,13],GammaHat,3)
+ParaInfoSubAlphaHat(GT[,14],GammaHat,4)
+ParaInfoSubAlphaHat(GT[,15],GammaHat,5)
+
+
 rowMeans(BetaA[,-(1:M/2)])
 
 #### HPD interval
@@ -514,7 +563,7 @@ r72<-Z[3,11:15,]
 y0pp<-matrix(as.vector(y0p),nrow = 7,ncol = 5,byrow = T)
 pre48<-array(0,c(5,7,dim(GammaHat)[3]))
 for (r in 1:dim(GammaHat)[3]){
-  Sig<-sqrt(sig2s[(M/2)+r])
+  Sig<-sqrt(sig2s[(M/2)+r]/20)
   p481dist<-rtmvnorm(1,mu =as.vector(y0pp*GammaHat[,,r]^(1-AlphaHat[,,r]^(-1))),sigma = diag(Sig,35), lb = rep(0,35),ub = rep(1,35))
   p481<-matrix(p481dist,5,7,byrow = T)
   pre48[,,r]<-p481
@@ -540,21 +589,93 @@ p72u=apply(pre72, c(1,2), function(x) quantile(x,0.975))
 r72
 gplotpred3(p72,p72l,p72u,r72,variable="Y @ t=72hr")
 
+#################################################################################################
+#################################################################################################
 
-sigmoid<-function(theta,x) 1/(1+exp(-theta*x))#-theta*x
+Al1=ParaInfoSubAlpha(AT[,1],resAlpha[(M/2):M,,],1)
+Al2=ParaInfoSubAlpha(AT[,2],resAlpha[(M/2):M,,],2)
+Al3=ParaInfoSubAlpha(AT[,3],resAlpha[(M/2):M,,],3)
+Al4=ParaInfoSubAlpha(AT[,4],resAlpha[(M/2):M,,],4)
+Al5=ParaInfoSubAlpha(AT[,5],resAlpha[(M/2):M,,],5)
+Al6=ParaInfoSubAlpha(AT[,6],resAlpha[(M/2):M,,],6)
+Al7=ParaInfoSubAlpha(AT[,7],resAlpha[(M/2):M,,],7)
+Al8=ParaInfoSubAlpha(AT[,8],resAlpha[(M/2):M,,],8)
+Al9=ParaInfoSubAlpha(AT[,9],resAlpha[(M/2):M,,],9)
+Al10=ParaInfoSubAlpha(AT[,10],resAlpha[(M/2):M,,],10)
 
-cost<-function(x,theta,y) 0.5*(sigmoid(theta,x)-y)^2
+Ga1=ParaInfoSubGamma(GT[,1],resGamma[(M/2):M,,],1)
+Ga2=ParaInfoSubGamma(GT[,2],resGamma[(M/2):M,,],2)
+Ga3=ParaInfoSubGamma(GT[,3],resGamma[(M/2):M,,],3)
+Ga4=ParaInfoSubGamma(GT[,4],resGamma[(M/2):M,,],4)
+Ga5=ParaInfoSubGamma(GT[,5],resGamma[(M/2):M,,],5)
+Ga6=ParaInfoSubGamma(GT[,6],resGamma[(M/2):M,,],6)
+Ga7=ParaInfoSubGamma(GT[,7],resGamma[(M/2):M,,],7)
+Ga8=ParaInfoSubGamma(GT[,8],resGamma[(M/2):M,,],8)
+Ga9=ParaInfoSubGamma(GT[,9],resGamma[(M/2):M,,],9)
+Ga10=ParaInfoSubGamma(GT[,10],resGamma[(M/2):M,,],10)
 
-x=rnorm(100, 0,1)
-y=sample(c(0,1), 100,r=T)
-theta=1
-cost(x,theta,y)
 
-J<-function(theta){
-  x=rnorm(100, 0,1)
-  y=sample(c(0,1), 100,r=T)
-  return (mean(cost(x,theta,y)))
-}
-X=seq(10,50,1)
-Y=sapply(X, J,simplify = TRUE, USE.NAMES = TRUE)
-plot(X,Y,t="l")
+Si1=ParaInfoVectors(0.005,sqrt(sig0s[-(1:M/2)]),name="Sigma0")
+Si2=ParaInfoVectors(0.005,sqrt(sig2s[-(1:M/2)]/5),name="Sigma1")
+AA=ParaInfoVectors(0.1,(As[-(1:M/2)]),name="A")
+BB=ParaInfoVectors(0.7,(Bs[-(1:M/2)]),name="B")
+CC=ParaInfoVectors(1,(Cs[-(1:M/2)]),name="C")
+Th=ParaInfoVectors(0.8,(thetas[-(1:M/2)]),name="theta")
+SiB1=ParaInfoVectors(1,(S2A[-(1:M/2)]),name="PrVaAl")
+SiB2=ParaInfoVectors(0.5,(S2G[-(1:M/2)]),name="PrVaGa")
+
+
+
+BA=ParaInfoBetas(betaa,BetaA[,-(1:M/2)])
+BG=ParaInfoBetas(betag,BetaG[,-(1:M/2)])
+
+ComInfo<-rbind(Al1,Al2,Al3,Al4,Al5,Al6,Al7,Al8,Al9,Al10,
+               Ga1,Ga2,Ga3,Ga4,Ga5,Ga6,Ga7,Ga8,Ga9,Ga10,
+               Si1,Si2,AA,BB,CC,Th,SiB1,SiB2,BA,BG)
+prmatrix(ComInfo,rowlab = rep("",176))
+
+
+Al1p<-ParaInfoSubAlphaHat(AT[,11],AlphaHat,1)
+Al2p<-ParaInfoSubAlphaHat(AT[,12],AlphaHat,2)
+Al3p<-ParaInfoSubAlphaHat(AT[,13],AlphaHat,3)
+Al4p<-ParaInfoSubAlphaHat(AT[,14],AlphaHat,4)
+Al5p<-ParaInfoSubAlphaHat(AT[,15],AlphaHat,5)
+
+Ga1p<-ParaInfoSubAlphaHat(GT[,11],GammaHat,1)
+Ga2p<-ParaInfoSubAlphaHat(GT[,12],GammaHat,2)
+Ga3p<-ParaInfoSubAlphaHat(GT[,13],GammaHat,3)
+Ga4p<-ParaInfoSubAlphaHat(GT[,14],GammaHat,4)
+Ga5p<-ParaInfoSubAlphaHat(GT[,15],GammaHat,5)
+
+
+y481p<-ParaInfoSubY(Z[2,11,],pre48,1)
+y482p<-ParaInfoSubY(Z[2,12,],pre48,2)
+y483p<-ParaInfoSubY(Z[2,13,],pre48,3)
+y484p<-ParaInfoSubY(Z[2,14,],pre48,4)
+y485p<-ParaInfoSubY(Z[2,15,],pre48,5)
+
+y721p<-ParaInfoSubY(Z[2,11,],pre72,1)
+y722p<-ParaInfoSubY(Z[2,12,],pre72,2)
+y723p<-ParaInfoSubY(Z[2,13,],pre72,3)
+y724p<-ParaInfoSubY(Z[2,14,],pre72,4)
+y725p<-ParaInfoSubY(Z[2,15,],pre72,5)
+
+PreInfo<-rbind(Al1p,Al2p,Al3p,Al4p,Al5p,
+               Ga1p,Ga2p,Ga3p,Ga4p,Ga5p,
+               y481p,y482p,y483p,y484p,y485p,
+               y721p,y722p,y723p,y724p,y725p
+)
+prmatrix(PreInfo,rowlab = rep("",176))
+
+MAE48<-mean(abs(r48-p48))
+MAE72<-mean(abs(r72-p72))
+TMAE<-sum(MAE48,MAE72)/2
+
+PMSE48<-(mean((r48-p48)^2))
+PMSE72<-(mean((r72-p72)^2))
+TPMSE<-(sum(PMSE48,PMSE72)/2)
+
+PreEva<-c(MAE48,MAE72,TMAE,PMSE48,PMSE72,TPMSE)
+names(PreEva)<-c("MAE48","MAE72","TMAE","PMSE48","PMSE72","TPMSE")
+
+

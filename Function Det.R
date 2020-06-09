@@ -70,12 +70,12 @@ pos_DAlpGamMu0<-function(y,y0,dalpha,dgamma,XAbeta,XGbeta,sigma,betaASD,betaGSD)
       pre.dalpha[i+1]=dalpha.s
     }
     
-    llikG<-priLikDGamma(y = y[,i],y0 = y0[i],dalpha=dalpha[i],dgamma = dgamma[i],pre.dalpha = pre.dalpha[i],pre.dgamma = pre.dgamma[i],xgbeta = XGbeta[i],sigma = sigma,betaSD = betaGSD)
-    dgamma.s<-rtruncnorm(1,mean = dgamma[i],sd = .1, a=0)
-    llikpG<-priLikDGamma(y = y[,i],y0 = y0[i],dalpha=dalpha[i],dgamma = dgamma.s,pre.dalpha = pre.dalpha[i],pre.dgamma = pre.dgamma[i],xgbeta = XGbeta[i],sigma = sigma,betaSD = betaGSD)
+    llikG<-priLikDGamma(y = y[,i],y0 = y0[i],dalpha=dalpha[i],dgamma = dgamma[i],pre.dalpha = pre.dalpha[i],pre.dgamma = pre.dgamma[i],xgbeta = XGbeta[i],sigma = 1.5*sigma,betaSD = betaGSD)
+    dgamma.s<-rtruncnorm(1,mean = dgamma[i],sd = .5, a=0)
+    llikpG<-priLikDGamma(y = y[,i],y0 = y0[i],dalpha=dalpha[i],dgamma = dgamma.s,pre.dalpha = pre.dalpha[i],pre.dgamma = pre.dgamma[i],xgbeta = XGbeta[i],sigma = 1.5*sigma,betaSD = betaGSD)
     r = exp(llikpG - llikG
-            -log(dtruncnorm(dgamma.s, mean=dgamma[i], sd=.1, a=0))
-            +log(dtruncnorm(dgamma[i], mean=dgamma.s, sd=.1, a=0)))
+            -log(dtruncnorm(dgamma.s, mean=dgamma[i], sd=.5, a=0))
+            +log(dtruncnorm(dgamma[i], mean=dgamma.s, sd=.5, a=0)))
     accept<-min(1,r)
     z<-runif(1)
     if(z<accept){
@@ -102,7 +102,7 @@ priLikSigma2<-function(y,Gamma,Alpha,Sigma2){
 #y=Y;Alpha = t(resAlpha[p,,]);Gamma = t(resGamma[p,,]);Sigma2 = sig2
 posSigma2<-function(y,Gamma,Alpha,Sigma2){
   llik<-priLikSigma2(y = y,Gamma = Gamma,Alpha = Alpha,Sigma2 = Sigma2)
-  Sigma2.s<-abs(rnorm(1,Sigma2,sd=0.00005))#rtruncnorm(1,mean =Sigma2,sd = 0.00005, a=0)#abs(rnorm(1,Sigma2,sd=0.005))#Sigma2.s=0.0002
+  Sigma2.s<-abs(rnorm(1,Sigma2,sd=0.005))#rtruncnorm(1,mean =Sigma2,sd = 0.00005, a=0)#abs(rnorm(1,Sigma2,sd=0.005))#Sigma2.s=0.0002
   llikp<-priLikSigma2(y = y,Gamma = Gamma,Alpha = Alpha,Sigma2 = Sigma2.s)
   r = exp(llikp - llik)
   accept<-min(1,r)
@@ -205,12 +205,120 @@ alphaGamma<-function(arr,dose,subject){
   return (count)
 }
 
+alphaGammaHat<-function(arr,dose,subject){
+  count=c()
+  for(i in 1:dim(arr)[3]){
+    count=c(count,arr[dose,subject,i])
+  }
+  return (count)
+}
+
+yHat<-function(arr,dose,subject){
+  count=c()
+  for(i in 1:dim(arr)[3]){
+    count=c(count,arr[subject,dose,i])
+  }
+  return (count)
+}
+
+ParaInfoSubY<-function(tv,arr,subject){
+  #par(mfrow=c(2,5))
+  info<-c()
+  for (i in 1:7){
+    pr=round(mean(yHat(arr,i,subject)),3)
+    prl=round(quantile(yHat(arr,i,subject),0.025),3)
+    pru=round(quantile(yHat(arr,i,subject),0.975),3)
+    #ge=round(geweke.diag(as.mcmc(alphaGammaHat(arr,dose,i)),frac2 = .1)$z,3)
+    #info=rbind(info,c(round(tv[i],3),prl,pr,pru,ge))
+    info=rbind(info,c(round(tv[i],3),prl,pr,pru))
+  }
+  prmatrix(info,rowlab = rep("",7))
+  #return(info)
+  #write.csv(info,file = paste0("~/Documents/GitHub/Bayesian-Dose_Response/Alpha",dose,".csv"))
+}
+
+ParaInfoSubAlphaHat<-function(tv,arr,dose){
+  #par(mfrow=c(2,5))
+  info<-c()
+  for (i in 1:7){
+    pr=round(mean(alphaGammaHat(arr,i,dose)),3)
+    prl=round(quantile(alphaGammaHat(arr,i,dose),0.025),3)
+    pru=round(quantile(alphaGammaHat(arr,i,dose),0.975),3)
+    #ge=round(geweke.diag(as.mcmc(alphaGammaHat(arr,dose,i)),frac2 = .1)$z,3)
+    #info=rbind(info,c(round(tv[i],3),prl,pr,pru,ge))
+    info=rbind(info,c(round(tv[i],3),prl,pr,pru))
+  }
+  prmatrix(info,rowlab = rep("",7))
+  #return(info)
+  #write.csv(info,file = paste0("~/Documents/GitHub/Bayesian-Dose_Response/Alpha",dose,".csv"))
+}
+
+
+
+
+
 tracePlotSub<-function(arr,dose){
   par(mfrow=c(2,5))
   for (i in 1:10){
     traceplot(as.mcmc(alphaGamma(arr,dose,i)))
   }
 }
+
+
+ParaInfoSubAlpha<-function(tv,arr,dose){
+  #par(mfrow=c(2,5))
+  info<-c()
+  for (i in 1:7){
+    pr=round(mean(alphaGamma(arr,i,dose)),3)
+    prl=round(quantile(alphaGamma(arr,i,dose),0.025),3)
+    pru=round(quantile(alphaGamma(arr,i,dose),0.975),3)
+    ge=round(geweke.diag(as.mcmc(alphaGamma(arr,i,dose)),frac2 = .1)$z,3)
+    info=rbind(info,c(round(tv[i],3),prl,pr,pru,ge))
+  }
+  prmatrix(info,rowlab = rep("",7))
+  #return(info)
+  #write.csv(info,file = paste0("~/Documents/GitHub/Bayesian-Dose_Response/Alpha",dose,".csv"))
+}
+
+ParaInfoSubGamma<-function(tv,arr,dose){
+  #par(mfrow=c(2,5))
+  info<-c()
+  for (i in 1:7){
+    pr=round(mean(alphaGamma(arr,dose,i)),3)
+    prl=round(quantile(alphaGamma(arr,dose,i),0.025),3)
+    pru=round(quantile(alphaGamma(arr,dose,i),0.975),3)
+    ge=round(geweke.diag(as.mcmc(alphaGamma(arr,dose,i)),frac2 = .1)$z,3)
+    info=rbind(info,c(round(tv[i],3),prl,pr,pru,ge))
+  }
+  prmatrix(info,rowlab = rep("",7))
+  #return(info)
+  #write.csv(info,file = paste0("~/Documents/GitHub/Bayesian-Dose_Response/Gamma",dose,".csv"))
+}
+
+ParaInfoVectors<-function(tv,arr,name){
+  info<-c()
+  pr=round(mean(arr),3)
+  prl=round(quantile(arr,0.025),3)
+  pru=round(quantile(arr,0.975),3)
+  ge=round(geweke.diag(as.mcmc(arr),frac2 = .1)$z,3)
+  info=rbind(info,c(round(tv,3),prl,pr,pru,ge))
+  return(info)
+  #write.csv(info,file = paste0("~/Documents/GitHub/Bayesian-Dose_Response/",name,".csv"))
+}
+
+ParaInfoBetas<-function(be,arr){
+  sumBetaA<-cbind(be,
+                  round(apply(arr,1,function (x) quantile(x,0.025)),3),
+                  round(rowMeans(arr),3),
+                  round(apply(arr,1,function (x) quantile(x,0.975)),3),
+                  round(geweke.diag(as.mcmc(t(arr)))$z,3))
+  
+  #write.csv(sumBetaA,file = paste0("/work/statgrads/krag57/AZ",j,"/Summary beta alpha.csv"))
+  prmatrix(sumBetaA,rowlab = rep("",14))
+  #return(sumBetaA)
+  #write.csv(info,file = paste0("~/Documents/GitHub/Bayesian-Dose_Response/",name,".csv"))
+}
+
 
 trplot<-function(x){
   par(mfrow=c(2,5))
