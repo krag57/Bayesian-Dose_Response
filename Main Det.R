@@ -63,20 +63,14 @@ dta<-lapply(seq_along(seq(1,70,by =7)), function(i) Xbind[(i:(i+6)),])
 ###################################################################################################
 
 betaa<-rep(0,14)
-betaa[1:4]<-c(0.15,.25,.1,.2)
+betaa[1:4]<-c(.15,.25,.1,.2)
 
 betag<-rep(0,14)
-betag[1:4]<-c(0.15,.1,.2,.25)
+betag[1:4]<-c(.15,.1,.2,.25)
 
-DAT=matrix(0,nrow = 7,15)
-for(i in 1:15){
-  DAT[,i]=exp(dta15[[i]]%*%betaa)
-}
+DAT<-matrix(exp(Xbind15%*%betaa),nrow = 7)
+DGT<-matrix(exp(Xbind15%*%betag),nrow = 7)
 
-DGT=matrix(0,nrow = 7,15)
-for(i in 1:15){
-  DGT[,i]=exp(dta15[[i]]%*%betag)
-}
 
 AT=matrix(0,nrow = 7,15)
 AT[1,]<-DAT[1,]+1
@@ -153,7 +147,7 @@ sum(resid(fitmodel)^2)
 
 #####################################  FANOVA   ######################################
 ######################################################################################
-dosenames <- c("d1  ", "d2", "d3 ", "d4", "d5","d6","d7")
+dosenames <- c("d1", "d2", "d3 ", "d4", "d5","d6","d7")
 FA=Z[3,1:10,]
 #  Set up a design matrix having a column for (the grand mean, and
 #    a column for (dose. Add a dummy contraint
@@ -252,7 +246,7 @@ for (i in 1:10){
   ga_int<-cbind(ga_int,sample(seq(1.10,1.51,length.out = 20),size = 7))
 }
 
-M=10000
+M=5000
 
 sig2=0.00002
 sig0=0.00005
@@ -294,8 +288,8 @@ i=2
 for (p in 2:M){
   print(p)
   #source("/home/statgrads/krag57/Parallelized simulation5.R")
-  XAbeta<-matrix(Xbind%*%beta,nrow = 7,byrow = F)
-  XGbeta<-matrix(Xbind%*%beta_g,nrow = 7,byrow = F)
+  XAbeta<-matrix(Xbind%*%beta,nrow = 7,byrow = T)
+  XGbeta<-matrix(Xbind%*%beta_g,nrow = 7,byrow = T)
   
   BetaA = cbind(BetaA, beta)
   BetaG = cbind(BetaG, beta_g)
@@ -349,6 +343,7 @@ for (p in 2:M){
   capture.output(bag<-bridge(Xbind,matrix(log(resDGamma[p,,]), ncol = 1),RJ=F,ab=c(2.92,0.0509*1.92)), file='NUL')
   beta_g<-colMeans(bag$beta[-(1:500),])
   s2g=(sqrt(mean(bag$s2)))
+  
   S2A<-c(S2A,s2a)
   S2G<-c(S2G,s2g)
 }
@@ -431,7 +426,7 @@ traceplot(as.mcmc(S2G[-(1:M/2)]),main="var2")
 quantile((S2G[-(1:M/2)]),c(0.025,0.975))
 
 ParaInfoVectors(0.005,sqrt(sig0s[-(1:M/2)]),name="Sigma0")
-ParaInfoVectors(0.005,sqrt(sig2s[-(1:M/2)]/5),name="Sigma1")
+ParaInfoVectors(0.005,sqrt(sig2s[-(1:M/2)]/500),name="Sigma1")
 ParaInfoVectors(0.1,(As[-(1:M/2)]),name="A")
 ParaInfoVectors(0.7,(Bs[-(1:M/2)]),name="B")
 ParaInfoVectors(1,(Cs[-(1:M/2)]),name="C")
@@ -500,9 +495,9 @@ gplotpred3(t(gm),t(gl),t(gu),t(gt),variable="Gamma")
 AlphaHat<-array(0,c(7,5,dim(BetaA[,-(1:M/2)])[2]))
 for (r in 1:dim(BetaA[,-(1:M/2)])[2]){
   DA=matrix(0,nrow = 7,5)
-  for(i in 1:5){
-    DA[,i]=exp(dta15[[10+i]]%*%BetaA[,(M/2)+r])
-  }
+  Sig0<-sqrt(sig0s[(M/2)+r])
+  DA<-matrix(exp(Xbind15[71:105,]%*%BetaA[,(M/2)+r]),nrow = 7)
+  
   AThat=matrix(0,nrow = 7,5)
   AThat[1,]<-DA[1,]+1
   for (i in 2:7){
@@ -514,9 +509,8 @@ for (r in 1:dim(BetaA[,-(1:M/2)])[2]){
 GammaHat<-array(0,c(7,5,dim(BetaG[,-(1:M/2)])[2]))
 for (r in 1:dim(BetaG[,-(1:M/2)])[2]){
   DG=matrix(0,nrow = 7,5)
-  for(i in 1:5){
-    DG[,i]=exp(dta15[[10+i]]%*%BetaG[,(M/2)+r])
-  }
+  Sig0<-sqrt(sig0s[(M/2)+r])
+  DG<-matrix(exp(Xbind15[71:105,]%*%BetaG[,(M/2)+r]),nrow = 7)
   
   GThat=matrix(0,nrow = 7,5)
   GThat[1,]<-DG[1,]+1
@@ -563,7 +557,7 @@ r72<-Z[3,11:15,]
 y0pp<-matrix(as.vector(y0p),nrow = 7,ncol = 5,byrow = T)
 pre48<-array(0,c(5,7,dim(GammaHat)[3]))
 for (r in 1:dim(GammaHat)[3]){
-  Sig<-sqrt(sig2s[(M/2)+r]/20)
+  Sig<-(sig2s[(M/2)+r])
   p481dist<-rtmvnorm(1,mu =as.vector(y0pp*GammaHat[,,r]^(1-AlphaHat[,,r]^(-1))),sigma = diag(Sig,35), lb = rep(0,35),ub = rep(1,35))
   p481<-matrix(p481dist,5,7,byrow = T)
   pre48[,,r]<-p481
@@ -577,7 +571,7 @@ gplotpred3(p48,p48l,p48u,r48,variable="Y @ t=48hr")
 
 pre72<-array(0,c(5,7,dim(GammaHat)[3]))
 for (r in 1:dim(GammaHat)[3]){
-  Sig<-(sig2s[(M/2)+r])
+  Sig<-sqrt(sig2s[(M/2)+r])
   p721dist<-rtmvnorm(1,mu =as.vector(y0pp*GammaHat[,,r]^(1-AlphaHat[,,r]^(-2))),sigma = diag(Sig,35), lb = rep(0,35),ub = rep(1,35))
   p721<-matrix(p721dist,5,7,byrow = T)
   pre72[,,r]<-p721
@@ -677,5 +671,4 @@ TPMSE<-(sum(PMSE48,PMSE72)/2)
 
 PreEva<-c(MAE48,MAE72,TMAE,PMSE48,PMSE72,TPMSE)
 names(PreEva)<-c("MAE48","MAE72","TMAE","PMSE48","PMSE72","TPMSE")
-
 
