@@ -37,7 +37,7 @@ priLikDAlpha<-function(y,y0,dalpha,dgamma,pre.dalpha,pre.dgamma,xabeta,sigma,bet
   #dtnorm(y, low=0, upp=1, mean = mu_tilde, sd = sigma,log=T)
   likDAlpha<-sum(ifelse(dtnorm(y, low=0, upp=1, mean = mu_tilde, sd = sigma,log=T)==Inf,0,dtnorm(y, low=0, upp=1, mean = mu_tilde, sd = sigma,log=T)))
   #likDAlpha<-sum(dtnorm(y, low=0, upp=1, mean = mu_tilde, sd = sigma,log=T))#sum(log(dtruncnorm(y, a=0, b=1, mean = mu_tilde, sd = sigma)))dtnorm(y, low=0, upp=1, mean = mu_tilde, sd = sigma,log=T)
-  priDAlpha<-log(dtruncnorm(dalpha, a=0, mean = xabeta, sd = betaSD))#sum(ifelse(dtnorm(dalpha, low=1, mean = xabeta, sd = betaSD,log=T)==Inf,0,dtnorm(dalpha, low=1, mean = xabeta, sd = betaSD,log=T)))#(dtnorm(dalpha, low=1, mean = xabeta, sd = betaSD,log=T))#dlnorm(dalpha,meanlog =xabeta,sdlog =betaSD,log=T)#dunif(dalpha,exp(xabeta)-(sqrt(3)*betaSD),max =exp(xabeta)+(sqrt(3)*betaSD),log=T)#
+  priDAlpha<-log(dtruncnorm(dalpha, a=0,b=2, mean = xabeta, sd = betaSD))#sum(ifelse(dtnorm(dalpha, low=1, mean = xabeta, sd = betaSD,log=T)==Inf,0,dtnorm(dalpha, low=1, mean = xabeta, sd = betaSD,log=T)))#(dtnorm(dalpha, low=1, mean = xabeta, sd = betaSD,log=T))#dlnorm(dalpha,meanlog =xabeta,sdlog =betaSD,log=T)#dunif(dalpha,exp(xabeta)-(sqrt(3)*betaSD),max =exp(xabeta)+(sqrt(3)*betaSD),log=T)#
   return (likDAlpha+priDAlpha)
 }
 
@@ -46,7 +46,7 @@ priLikDGamma<-function(y,y0,dalpha,dgamma,pre.dalpha,pre.dgamma,xgbeta,sigma,bet
   mu_tilde<-y0*(dgamma+pre.dgamma+1)^(1-(dalpha+pre.dalpha+1)^(-t))
   likDGamma<-sum(ifelse(dtnorm(y, low=0, upp=1, mean = mu_tilde, sd = sigma,log=T)==Inf,0,dtnorm(y, low=0, upp=1, mean = mu_tilde, sd = sigma,log=T)))
   #likDGamma<-sum(dtnorm(y, low=0, upp=1, mean = mu_tilde, sd = sigma,log=T))#sum(log(dtruncnorm(y, a=0, b=1, mean = mu_tilde, sd = sigma)))
-  priDGamma<-dtnorm(dgamma, low=0,  mean = xgbeta, sd = betaSD,log=T)#sum(ifelse(dtnorm(dgamma, low=1,  mean = xgbeta, sd = betaSD,log=T)==Inf,0,dtnorm(dgamma, low=1,  mean = xgbeta, sd = betaSD,log=T)))#dtnorm(dgamma, low=1,  mean = xgbeta, sd = betaSD,log=T)#log(dtruncnorm(dgamma, a=0, mean = xgbeta, sd = betaSD))#dlnorm(dgamma,meanlog =xgbeta,sdlog =betaSD,log=T)#dunif(dgamma,exp(xgbeta)-(sqrt(3)*betaSD),max =exp(xgbeta)+(sqrt(3)*betaSD),log=T)#
+  priDGamma<-dtnorm(dgamma, low=0, upp=2, mean = xgbeta, sd = betaSD,log=T)#sum(ifelse(dtnorm(dgamma, low=1,  mean = xgbeta, sd = betaSD,log=T)==Inf,0,dtnorm(dgamma, low=1,  mean = xgbeta, sd = betaSD,log=T)))#dtnorm(dgamma, low=1,  mean = xgbeta, sd = betaSD,log=T)#log(dtruncnorm(dgamma, a=0, mean = xgbeta, sd = betaSD))#dlnorm(dgamma,meanlog =xgbeta,sdlog =betaSD,log=T)#dunif(dgamma,exp(xgbeta)-(sqrt(3)*betaSD),max =exp(xgbeta)+(sqrt(3)*betaSD),log=T)#
   return (likDGamma+priDGamma)
 }
 
@@ -58,11 +58,11 @@ pos_DAlpGamMu0<-function(y,y0,dalpha,dgamma,XAbeta,XGbeta,sigma,betaASD,betaGSD)
   pre.dgamma=c(0,dgamma)
   for(i in 1:7){
     llik<-priLikDAlpha(y = y[,i],y0 = y0[i],dalpha = dalpha[i],dgamma = dgamma[i],pre.dalpha = pre.dalpha[i],pre.dgamma = pre.dgamma[i],xabeta = XAbeta[i],sigma = sigma,betaSD = betaASD)
-    dalpha.s<-rtruncnorm(1,mean = dalpha[i],sd =.5,a=0)
+    dalpha.s<-rtruncnorm(1,mean = dalpha[i],sd =.5,a=0,b=2)
     llikp<-priLikDAlpha(y = y[,i],y0 = y0[i],dalpha = dalpha.s,dgamma = dgamma[i],pre.dalpha = pre.dalpha[i],pre.dgamma = pre.dgamma[i],xabeta = XAbeta[i],sigma = sigma,betaSD = betaASD)
     r = exp(llikp - llik
-            -log(dtruncnorm(dalpha.s, mean=dalpha[i], sd=.5, a=0))
-            +log(dtruncnorm(dalpha[i], mean=dalpha.s, sd=.5, a=0)))
+            -log(dtruncnorm(dalpha.s, mean=dalpha[i], sd=.5, a=0,b=2))
+            +log(dtruncnorm(dalpha[i], mean=dalpha.s, sd=.5, a=0,b=2)))
     accept<-min(1,r)
     z<-runif(1)
     if(z<accept){
@@ -70,12 +70,12 @@ pos_DAlpGamMu0<-function(y,y0,dalpha,dgamma,XAbeta,XGbeta,sigma,betaASD,betaGSD)
       pre.dalpha[i+1]=dalpha.s
     }
     
-    llikG<-priLikDGamma(y = y[,i],y0 = y0[i],dalpha=dalpha[i],dgamma = dgamma[i],pre.dalpha = pre.dalpha[i],pre.dgamma = pre.dgamma[i],xgbeta = XGbeta[i],sigma = 1.5*sigma,betaSD = betaGSD)
-    dgamma.s<-rtruncnorm(1,mean = dgamma[i],sd = .5, a=0)
-    llikpG<-priLikDGamma(y = y[,i],y0 = y0[i],dalpha=dalpha[i],dgamma = dgamma.s,pre.dalpha = pre.dalpha[i],pre.dgamma = pre.dgamma[i],xgbeta = XGbeta[i],sigma = 1.5*sigma,betaSD = betaGSD)
+    llikG<-priLikDGamma(y = y[,i],y0 = y0[i],dalpha=dalpha[i],dgamma = dgamma[i],pre.dalpha = pre.dalpha[i],pre.dgamma = pre.dgamma[i],xgbeta = XGbeta[i],sigma = sigma,betaSD = betaGSD)
+    dgamma.s<-rtruncnorm(1,mean = dgamma[i],sd = .5, a=0,b=2)
+    llikpG<-priLikDGamma(y = y[,i],y0 = y0[i],dalpha=dalpha[i],dgamma = dgamma.s,pre.dalpha = pre.dalpha[i],pre.dgamma = pre.dgamma[i],xgbeta = XGbeta[i],sigma = sigma,betaSD = betaGSD)
     r = exp(llikpG - llikG
-            -log(dtruncnorm(dgamma.s, mean=dgamma[i], sd=.5, a=0))
-            +log(dtruncnorm(dgamma[i], mean=dgamma.s, sd=.5, a=0)))
+            -log(dtruncnorm(dgamma.s, mean=dgamma[i], sd=.5, a=0,b=2))
+            +log(dtruncnorm(dgamma[i], mean=dgamma.s, sd=.5, a=0,b=2)))
     accept<-min(1,r)
     z<-runif(1)
     if(z<accept){
@@ -102,7 +102,7 @@ priLikSigma2<-function(y,Gamma,Alpha,Sigma2){
 #y=Y;Alpha = t(resAlpha[p,,]);Gamma = t(resGamma[p,,]);Sigma2 = sig2
 posSigma2<-function(y,Gamma,Alpha,Sigma2){
   llik<-priLikSigma2(y = y,Gamma = Gamma,Alpha = Alpha,Sigma2 = Sigma2)
-  Sigma2.s<-abs(rnorm(1,Sigma2,sd=0.005))#rtruncnorm(1,mean =Sigma2,sd = 0.00005, a=0)#abs(rnorm(1,Sigma2,sd=0.005))#Sigma2.s=0.0002
+  Sigma2.s<-abs(rnorm(1,Sigma2,sd=0.0002))#rtruncnorm(1,mean =Sigma2,sd = 0.00005, a=0)#abs(rnorm(1,Sigma2,sd=0.005))#Sigma2.s=0.0002
   llikp<-priLikSigma2(y = y,Gamma = Gamma,Alpha = Alpha,Sigma2 = Sigma2.s)
   r = exp(llikp - llik)
   accept<-min(1,r)
