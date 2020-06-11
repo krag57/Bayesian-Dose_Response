@@ -113,12 +113,6 @@ for (i in 1:length(PVol)){
   if (AvDiff [i,3] == min(AvDiff[,3])) DataVol[3] = PVol[i]
 }
 
-# set(0,'defaultAxesFontSize',14)
-# 
-# %LED = U_thresh[3]*1.1990/(4*pi/3);
-# 
-# %quant = ec50_bootstrap([LED; DataVol]',[0; Data[,3]]');
-# 
 plot(PVol,M_kill[,1],col="blue",t="l")
 lines(PVol,M_kill[,2],col="red",t="l")
 lines(PVol,M_kill[,3],col="black",t="l")
