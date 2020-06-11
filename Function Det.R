@@ -87,7 +87,7 @@ pos_DAlpGamMu0<-function(y,y0,dalpha,dgamma,XAbeta,XGbeta,sigma,betaASD,betaGSD)
 }
 
 
-priLikSigma2<-function(y,Gamma,Alpha,Sigma2){
+priLikSigma2<-function(y,Gamma,Alpha,Sigma2,SSE){
   likHoods<-array(0,c(2,10,7))
   y0<-y[1,,]
   for (k in 1:2){
@@ -95,15 +95,15 @@ priLikSigma2<-function(y,Gamma,Alpha,Sigma2){
   }
   likY<-sum(ifelse(dtnorm(y[2:3,,], low=0, upp=1, mean = likHoods[1:2,,], sd = sqrt(Sigma2),log=T)==Inf,0,dtnorm(y[2:3,,], low=0, upp=1, mean = likHoods[1:2,,], sd = sqrt(Sigma2),log=T)))
   #likY<-sum(log(dtruncnorm(y[2:3,,], a=0, b=1, mean = likHoods[1:2,,], sd = sqrt(Sigma2))))#sum(msm::dtnorm(y[2:3,,],likHoods[1:2,,],sqrt(Sigma2),lower = 0,u=1,log = T))#
-  priSigma2<-log(MCMCpack::dinvgamma(Sigma2,shape = 3,scale = .019738e-05*2))#dinvgamma(10,shape = 3,scale = .019738e-05*2,log = T)
+  priSigma2<-log(MCMCpack::dinvgamma(Sigma2,shape = 3,scale = SSE*2))#dinvgamma(10,shape = 3,scale = .019738e-05*2,log = T)
   return(likY+priSigma2)
 }
 
 #y=Y;Alpha = t(resAlpha[p,,]);Gamma = t(resGamma[p,,]);Sigma2 = sig2
-posSigma2<-function(y,Gamma,Alpha,Sigma2){
-  llik<-priLikSigma2(y = y,Gamma = Gamma,Alpha = Alpha,Sigma2 = Sigma2)
+posSigma2<-function(y,Gamma,Alpha,Sigma2,SSE){
+  llik<-priLikSigma2(y = y,Gamma = Gamma,Alpha = Alpha,Sigma2 = Sigma2,SSE=SSE)
   Sigma2.s<-abs(rnorm(1,Sigma2,sd=0.0002))#rtruncnorm(1,mean =Sigma2,sd = 0.00005, a=0)#abs(rnorm(1,Sigma2,sd=0.005))#Sigma2.s=0.0002
-  llikp<-priLikSigma2(y = y,Gamma = Gamma,Alpha = Alpha,Sigma2 = Sigma2.s)
+  llikp<-priLikSigma2(y = y,Gamma = Gamma,Alpha = Alpha,Sigma2 = Sigma2.s,SSE=SSE)
   r = exp(llikp - llik)
   accept<-min(1,r)
   z<-runif(1)

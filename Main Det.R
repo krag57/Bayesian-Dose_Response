@@ -148,7 +148,7 @@ sum(resid(fitmodel)^2)
 #####################################  FANOVA   ######################################
 ######################################################################################
 dosenames <- c("d1", "d2", "d3 ", "d4", "d5","d6","d7")
-FA=Z[3,1:10,]
+FA=Z[1,1:10,]
 #  Set up a design matrix having a column for (the grand mean, and
 #    a column for (dose. Add a dummy contraint
 #    observation
@@ -316,7 +316,7 @@ for (p in 2:M){
     resGamma[p,i,]<-resGamma[p,i-1,]+resDGamma[p,i,]
   }
   #print(p)
-  sig2<-posSigma2(y,Alpha = t(resAlpha[p,,]),Gamma = t(resGamma[p,,]),Sigma2 = sig2)
+  sig2<-posSigma2(y,Alpha = t(resAlpha[p,,]),Gamma = t(resGamma[p,,]),Sigma2 = sig2,SSE=SSE)
   sig2s<-c(sig2s,sig2)
   
   #print(p)
@@ -407,7 +407,7 @@ ParaInfoSubGamma(GT[,10],resGamma[(M/2):M,,],10)
 
 
 
-par(mfrow=c(1,1))
+par(mfrow=c(3,3))
 traceplot(as.mcmc(sqrt(sig0s[-(1:M/2)])),main="Sigma0")
 quantile(sqrt(sig0s[-(1:M/2)]),c(0.025,0.975))
 traceplot(as.mcmc((sig2s[-(1:M/2)])),main="Sigma1")
@@ -420,10 +420,11 @@ traceplot(as.mcmc(Cs[-(1:M/2)]),main="C")
 quantile((Cs[-(1:M/2)]),c(0.025,0.975))
 traceplot(as.mcmc(thetas[-(1:M/2)]),main="Theta")
 quantile((thetas[-(1:M/2)]),c(0.025,0.975))
-traceplot(as.mcmc(S2A[-(1:M/2)]),main="var1")
+traceplot(as.mcmc(S2A[-(1:M/2)]),main="var prior alpha")
 quantile((S2A[-(1:M/2)]),c(0.025,0.975))
-traceplot(as.mcmc(S2G[-(1:M/2)]),main="var2")
+traceplot(as.mcmc(S2G[-(1:M/2)]),main="var prior gamma")
 quantile((S2G[-(1:M/2)]),c(0.025,0.975))
+
 
 ParaInfoVectors(0.005,sqrt(sig0s[-(1:M/2)]),name="Sigma0")
 ParaInfoVectors(0.005,sqrt(sig2s[-(1:M/2)]/500),name="Sigma1")
@@ -450,7 +451,7 @@ ParaInfoSubAlphaHat(GT[,13],GammaHat,3)
 ParaInfoSubAlphaHat(GT[,14],GammaHat,4)
 ParaInfoSubAlphaHat(GT[,15],GammaHat,5)
 
-
+par(mfrow=c(2,1))
 rowMeans(BetaA[,-(1:M/2)])
 
 #### HPD interval
