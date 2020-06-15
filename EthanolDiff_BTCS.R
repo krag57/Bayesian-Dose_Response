@@ -53,3 +53,6 @@ EthanolDiff_BTCS<-function(Vol,U_thresh,eps){
   }
   return(max(M_kill))
 }
+
+
+
