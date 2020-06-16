@@ -434,7 +434,8 @@ for(h in 1:50){
             "AlphaHat"=AlphaHat,"GammaHat"=GammaHat,"Y48"=pre48,"Y72"=pre72,"ParaInfo"=ComInfo,
             "PreInfo"=PreInfo,"Eval"=PreEva)
   
-  save(lisA, file="/work/statgrads/krag57/Data",h,".RData")
+  save(lisA, file=paste0("/work/statgrads/krag57/Data",h,".RData"))
+  
   EntireData <- append(EntireData, list(lisA))
   
   names(EntireData)[h] <- paste0("Data",h)
