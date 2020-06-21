@@ -105,11 +105,12 @@ for (k in 1:2){
   }
   Z[k+1,,]<-yt
 }
+
 Z[2,,]  
 
 Y=Z[,1:10,]
 
-matplot(t(matrix(AZ_628_res[,2],ncol=7,byrow = T)),t="l")
+#matplot(t(matrix(AZ_628_res[,2],ncol=7,byrow = T)),t="l")
 
 # 1/as.vector((apply(Y,c(2,3),var)))
 # plot(as.vector((apply(Y,c(2,3),var))))
